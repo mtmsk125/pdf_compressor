@@ -21,3 +21,4 @@ if uploaded_file:
     # خانة كود التفعيل
     st.subheader("🔑 تفعيل النسخة الكاملة")
     activation_code = st.text_input("أدخل كود التفع
+    
