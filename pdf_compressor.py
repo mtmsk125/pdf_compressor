@@ -4,73 +4,77 @@ import fitz
 from PIL import Image
 import uuid
 import json
-from flask import Flask, request, send_file, render_template_string, jsonify
+from flask import Flask, request, send_file, render_template, jsonify
 
 app = Flask(__name__)
 DB_FILE = "users_db.json"
 
-HTML_PAGE = """<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Compressor Pro - 5$ مدى الحياة</title>
-<style>
-    body { font-family: 'Tahoma', sans-serif; background: #f5f7fa; margin: 0; padding: 20px; }
-    .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-    h1 { color: #2c3e50; text-align: center; }
-    .pricing { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 20px; margin: 40px 0; }
-    .plan { border: 2px solid #ddd; border-radius: 12px; padding: 25px; text-align: center; position: relative; }
-    .plan.popular { border-color: #e74c3c; box-shadow: 0 0 20px rgba(231,76,60,0.2); }
-    .badge { position: absolute; top: -12px; right: 20px; background: #e74c3c; color: white; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
-    .price { font-size: 42px; color: #2c3e50; font-weight: bold; margin: 15px 0; }
-    .price span { font-size: 16px; color: #7f8c8d; }
-    button { background: #3498db; color: white; border: none; padding: 14px 30px; border-radius: 8px; cursor: pointer; font-size: 16px; width: 100%; font-weight: bold; }
-    button:hover { background: #2980b9; }
-    .compress-box, .activate-box { background: #ecf0f1; padding: 25px; border-radius: 10px; margin-top: 30px; }
-    input[type=file], input[type=text] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-    #result { margin-top: 20px; padding: 15px; background: #d4edda; border-radius: 8px; display: none; }
-    .counter { background: #fff3cd; padding: 12px; border-radius: 6px; margin: 10px 0; text-align: center; font-weight: bold; }
-    .note { font-size: 13px; color: #7f8c8d; text-align: center; margin-top: 10px; }
-</style>
-</head>
-<body>
-<div class="container">
-    <h1>📦 PDF Compressor Pro</h1>
-    <p style="text-align:center; color:#7f8c8d; font-size:18px">اضغط ملفات PDF حتى 70% بدون ما تخرب الجودة</p>
+def load_db():
+    if not os.path.exists(DB_FILE):
+        return {}
+    with open(DB_FILE, 'r') as f:
+        return json.load(f)
 
-    <div class="pricing">
-        <div class="plan">
-            <h3>جرّب مجاناً</h3>
-            <div class="price">0$<span>/للأبد</span></div>
-            <p>✓ 3 صفحات لكل ملف<br>✓ علامة مائية صغيرة<br>✓ بدون تسجيل</p>
-            <button onclick="scrollToCompress()">ابدأ الضغط</button>
-        </div>
+def save_db(data):
+    with open(DB_FILE, 'w') as f:
+        json.dump(data, f)
 
-        <div class="plan popular">
-            <span class="badge">الأكثر مبيعاً</span>
-            <h3>Lifetime Starter</h3>
-            <div class="price">5$<span> مرة وحدة</span></div>
-            <p>✓ 50 ملف كامل مدى الحياة<br>✓ بدون علامة مائية<br>✓ سرعة أولوية<br>✓ أرخص من سندويشة</p>
-            <button onclick="alert('لما تربط Payoneer، زر الدفع رح يتحول تلقائي. هسا للتجربة: الكود DEMO-5USD')">اشتري الآن</button>
-        </div>
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-        <div class="plan">
-            <h3>Lifetime Pro</h3>
-            <div class="price">14.99$<span> مرة وحدة</span></div>
-            <p>✓ ملفات غير محدودة<br>✓ بدون علامة مائية<br>✓ API للمطورين<br>✓ دعم 24/7</p>
-            <button onclick="alert('للشركات والمكاتب')">اشتري الآن</button>
-        </div>
-    </div>
+@app.route('/compress', methods=['POST'])
+def compress():
+    file = request.files['pdf']
+    pdf_bytes = file.read()
+    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+    output = fitz.open()
 
-    <div class="activate-box">
-        <h3>🔑 عندك كود تفعيل؟</h3>
-        <p>بعد الدفع رح يوصلك كود. الصقه هون عشان تفعل الـ 50 ملف:</p>
-        <input type="text" id="codeInput" placeholder="مثال: LIFETIME-ABCD-1234">
-        <button onclick="activateCode()">فعّل الكود</button>
-        <div id="activateResult"></div>
-        <p class="note">لسا ما ربطت Payoneer؟ استخدم كود التجربة: DEMO-5USD</p>
-    </div>
+    for i in range(min(3, len(doc))):
+        page = doc.load_page(i)
+        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
+        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        img_byte = io.BytesIO()
+        img.save(img_byte, format='JPEG', quality=70)
+        new_page = output.new_page(width=page.rect.width, height=page.rect.height)
+        new_page.insert_image(page.rect, stream=img_byte.getvalue())
 
-    <div class="compress-box" id="compress">
-        
+    output_bytes = io.BytesIO()
+    output.save(output_bytes)
+    output.close()
+    doc.close()
+
+    before = len(pdf_bytes) / 1024 / 1024
+    after = output_bytes.tell() / 1024 / 1024
+    ratio = round((1 - after/before) * 100, 1)
+
+    filename = f"compressed_{uuid.uuid4().hex[:8]}.pdf"
+    with open(filename, 'wb') as f:
+        f.write(output_bytes.getvalue())
+
+    return jsonify({
+        'before': round(before, 2),
+        'after': round(after, 2),
+        'ratio': ratio,
+        'download': f'/download/{filename}'
+    })
+
+@app.route('/download/<filename>')
+def download(filename):
+    return send_file(filename, as_attachment=True)
+
+@app.route('/activate', methods=['POST'])
+def activate():
+    code = request.json.get('code')
+    db = load_db()
+    
+    if code == 'DEMO-5USD':
+        user_id = str(uuid.uuid4())
+        db[user_id] = {'files_left': 50, 'plan': 'starter'}
+        save_db(db)
+        return jsonify({'status': 'ok', 'files_left': 50})
+    
+    return jsonify({'status': 'error', 'msg': 'كود غير صحيح'})
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=10000)
