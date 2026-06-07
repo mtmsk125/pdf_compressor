@@ -87,3 +87,4 @@ HTML_PAGE = """
 document.getElementById('uploadForm').onsubmit = async (e) => {
     e.preventDefault();
     let
+    
