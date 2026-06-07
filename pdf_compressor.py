@@ -1,23 +1,22 @@
+from flask import Flask, render_template, request, send_file, redirect, url_for
 import os
+from pypdf import PdfReader, PdfWriter
 import io
-import fitz
-from PIL import Image
 import uuid
-import json
-from flask import Flask, request, send_file, render_template, jsonify
 
 app = Flask(__name__)
-DB_FILE = "users_db.json"
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # 50MB max
 
-def load_db():
-    if not os.path.exists(DB_FILE):
-        return {}
-    with open(DB_FILE, 'r') as f:
-        return json.load(f)
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-def save_db(data):
-    with open(DB_FILE, 'w') as f:
-        json.dump(data, f)
+# كود تفعيل وهمي للتجربة
+VALID_CODES = {
+    'DEMO-5USD': 50 # 50 ملف مدى الحياة
+}
+
+# نخزن عدد الاستخدامات مؤقتاً
+usage_count = {}
 
 @app.route('/')
 def index():
@@ -25,56 +24,47 @@ def index():
 
 @app.route('/compress', methods=['POST'])
 def compress():
-    file = request.files['pdf']
-    pdf_bytes = file.read()
-    doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-    output = fitz.open()
+    code = request.form.get('code', '').strip()
 
-    for i in range(min(3, len(doc))):
-        page = doc.load_page(i)
-        pix = page.get_pixmap(matrix=fitz.Matrix(1.5, 1.5))
-        img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        img_byte = io.BytesIO()
-        img.save(img_byte, format='JPEG', quality=70)
-        new_page = output.new_page(width=page.rect.width, height=page.rect.height)
-        new_page.insert_image(page.rect, stream=img_byte.getvalue())
+    if code not in VALID_CODES:
+        return "كود التفعيل غلط ❌", 400
 
-    output_bytes = io.BytesIO()
-    output.save(output_bytes)
-    output.close()
-    doc.close()
+    if code not in usage_count:
+        usage_count[code] = 0
 
-    before = len(pdf_bytes) / 1024 / 1024
-    after = output_bytes.tell() / 1024 / 1024
-    ratio = round((1 - after/before) * 100, 1)
+    if usage_count[code] >= VALID_CODES[code]:
+        return "خلصت عدد الملفات المسموحة للكود هاد", 400
 
-    filename = f"compressed_{uuid.uuid4().hex[:8]}.pdf"
-    with open(filename, 'wb') as f:
-        f.write(output_bytes.getvalue())
+    file = request.files['pdf_file']
+    if not file:
+        return "ما اخترت ملف", 400
 
-    return jsonify({
-        'before': round(before, 2),
-        'after': round(after, 2),
-        'ratio': ratio,
-        'download': f'/download/{filename}'
-    })
+    try:
+        # قراءة الـ PDF
+        reader = PdfReader(file)
+        writer = PdfWriter()
 
-@app.route('/download/<filename>')
-def download(filename):
-    return send_file(filename, as_attachment=True)
+        # ضغط: بنشيل الصور الكبيرة وبنقلل الجودة
+        for page in reader.pages:
+            page.compress_content_streams() # هاي أهم سطر للضغط
+            writer.add_page(page)
 
-@app.route('/activate', methods=['POST'])
-def activate():
-    code = request.json.get('code')
-    db = load_db()
-    
-    if code == 'DEMO-5USD':
-        user_id = str(uuid.uuid4())
-        db[user_id] = {'files_left': 50, 'plan': 'starter'}
-        save_db(db)
-        return jsonify({'status': 'ok', 'files_left': 50})
-    
-    return jsonify({'status': 'error', 'msg': 'كود غير صحيح'})
+        # حفظ الملف المضغوط بالذاكرة
+        output = io.BytesIO()
+        writer.write(output)
+        output.seek(0)
+
+        usage_count[code] += 1
+
+        return send_file(
+            output,
+            download_name=f"compressed_{file.filename}",
+            as_attachment=True,
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        return f"صار خطأ: {str(e)}", 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=10000)
+    app.run(debug=True)
