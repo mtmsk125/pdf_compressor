@@ -1,5 +1,7 @@
-from flask import Flask, render_template, request, send_file, jsonify
+from flask import Flask, render_template, request, send_file
 import os
+import subprocess
+import uuid
 
 app = Flask(__name__)
 UPLOAD_FOLDER = 'uploads'
@@ -9,11 +11,22 @@ os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
 
 @app.route('/')
 def index():
-    return "مرحبا التطبيق شغال 100%"
+    return render_template('index.html')
 
-@app.route('/health')
-def health():
-    return jsonify({"status": "ok"}), 200
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))
+@app.route('/pdf/compress', methods=['POST'])
+def compress_pdf():
+    if 'file' not in request.files:
+        return "ما في ملف", 400
+    
+    file = request.files['file']
+    if file.filename == '':
+        return "ما اخترت ملف", 400
+    
+    if file and file.filename.endswith('.pdf'):
+        # اسم ملف مؤقت
+        input_path = os.path.join(UPLOAD_FOLDER, str(uuid.uuid4()) + '.pdf')
+        output_path = os.path.join(COMPRESSED_FOLDER, 'compressed_' + file.filename)
+        
+        file.save(input_path)
+        
+        # ضغط باستخدام ghostscript
