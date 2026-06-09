@@ -29,3 +29,15 @@ def compress_pdf():
         writer.write(f)
     
     return send_file(output_path, as_attachment=True)
+
+def merge_pdf():
+    return "قريباً - دمج ملفات PDF", 200
+
+def split_pdf():
+    return "قريباً - تقسيم PDF", 200
+
+def pdf_to_word():
+    return "قريباً - تحويل PDF لوورد", 200
+
+def word_to_pdf():
+    return "قريباً - تحويل وورد لـ PDF", 200
