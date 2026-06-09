@@ -1,41 +1,62 @@
-from flask import Flask, render_template
-from pdf_tools import compress_pdf, merge_pdf, split_pdf, pdf_to_word, word_to_pdf
-from image_tools import remove_background, image_to_webp
+import os
+import subprocess
+from flask import Flask, request, render_template, send_file, flash, redirect, url_for
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
+app.secret_key = 'supersecretkey' # ضروري للـ flash messages
 
-@app.route('/')
+UPLOAD_FOLDER = 'uploads'
+COMPRESSED_FOLDER = 'compressed'
+ALLOWED_EXTENSIONS = {'pdf'}
+
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    if request.method == 'POST':
+        if 'pdf_file' not in request.files:
+            flash('ما في ملف مرفوع')
+            return redirect(request.url)
 
-@app.route('/pdf/compress', methods=['GET', 'POST'])
-def compress():
-    return compress_pdf()
+        file = request.files['pdf_file']
+        if file.filename == '':
+            flash('ما اخترت ملف')
+            return redirect(request.url)
 
-@app.route('/pdf/merge', methods=['GET', 'POST'])
-def merge():
-    return merge_pdf()
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            input_path = os.path.join(UPLOAD_FOLDER, filename)
+            output_filename = 'compressed_' + filename
+            output_path = os.path.join(COMPRESSED_FOLDER, output_filename)
 
-@app.route('/pdf/split', methods=['GET', 'POST'])
-def split():
-    return split_pdf()
+            file.save(input_path)
 
-@app.route('/pdf/to-word', methods=['GET', 'POST'])
-def pdf2word():
-    return pdf_to_word()
+            # === التعديل الذكي: اختيار الجودة حسب الحجم ===
+            file_size_mb = os.path.getsize(input_path) / (1024 * 1024)
 
-@app.route('/word/to-pdf', methods=['GET', 'POST'])
-def word2pdf():
-    return word_to_pdf()
+            if file_size_mb <= 30:
+                quality = '/ebook' # جودة عالية للطباعة
+                quality_msg = 'جودة عالية - مناسب للطباعة'
+            else:
+                quality = '/screen' # جودة شاشة للملفات الكبيرة
+                quality_msg = 'جودة شاشة - تم التقليل عشان الملف كبير'
 
-@app.route('/image/remove-bg', methods=['GET', 'POST'])
-def remove_bg():
-    return remove_background()
+            try:
+                subprocess.run([
+                    'gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+                    f'-dPDFSETTINGS={quality}', '-dNOPAUSE', '-dQUIET', '-dBATCH',
+                    f'-sOutputFile={output_path}', input_path
+                ], check=True)
 
-@app.route('/image/to-webp', methods=['GET', 'POST'])
-def to_webp():
-    return image_to_webp()
+                original_size = os.path.getsize(input_path) / (1024 * 1024)
+                compressed_size = os.path.getsize(output_path) / (1024 * 1024)
+                saved = ((original_size - compressed_size) / original_size) * 100
 
-if __name__ == '__main__':
-    app.run(debug=True)
+                return render_template('index.html',
+                    filename=output_filename,
+                    original
