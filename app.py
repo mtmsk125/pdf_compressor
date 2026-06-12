@@ -1,31 +1,32 @@
-from flask import Flask, request, render_template, send_file, flash, redirect, url_for
-import fitz # PyMuPDF
+import subprocess
 import os
+from flask import Flask, request, render_template, send_file, flash, redirect, url_for
 from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
-app.secret_key = 'your-secret-key-here'
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024 # 50MB
-
+app.secret_key = 'secret-key-123'
 UPLOAD_FOLDER = 'uploads'
-COMPRESSED_FOLDER = 'compressed'
 ALLOWED_EXTENSIONS = {'pdf'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024 # 100MB سقف المجاني
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def compress_pdf(input_path, output_path):
-    doc = fitz.open(input_path)
-    # شلنا linear=True عشان pymupdf الجديدة
-    doc.save(output_path, deflate=True, garbage=4, clean=True,
-             deflate_images=True, deflate_fonts=True)
-    doc.close()
+    # Ghostscript: ضغط قوي + رام قليل 60MB بس
+    cmd = [
+        'gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
+        '-dPDFSETTINGS=/ebook', '-dNOPAUSE', '-dQUIET', '-dBATCH',
+        f'-sOutputFile={output_path}', input_path
+    ]
+    subprocess.run(cmd, check=True)
 
 @app.route('/', methods=['GET', 'POST'])
-def upload_file():
+def index():
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('ما اخترت ملف')
@@ -38,8 +39,8 @@ def upload_file():
 
         if file and allowed_file(file.filename):
             filename = secure_filename(file.filename)
-            input_path = os.path.join(UPLOAD_FOLDER, filename)
-            output_path = os.path.join(COMPRESSED_FOLDER, 'compressed_' + filename)
+            input_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            output_path = os.path.join(app.config['UPLOAD_FOLDER'], 'compressed_' + filename)
 
             file.save(input_path)
 
@@ -49,11 +50,8 @@ def upload_file():
             except Exception as e:
                 flash(f'صار خطأ: {str(e)}')
                 return redirect(request.url)
-            finally:
-                if os.path.exists(input_path):
-                    os.remove(input_path)
 
     return render_template('index.html')
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=int(os.environ.get('PORT', 10000)))
+    app.run(debug=True)
