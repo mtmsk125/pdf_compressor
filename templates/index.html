@@ -1,29 +1,108 @@
-<div class="box">
-    <h2>اضغط ملف PDF</h2>
-    <p>قلل حجم ملفاتك 80% بضغطة وحدة</p>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ضغط PDF - مجاني وسريع</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #fff;
+        }
+       .container { max-width: 600px; width: 100%; }
+       .founder-offer {
+            background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+            color: #1e3a8a;
+            padding: 20px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(251, 191, 36, 0.3);
+        }
+       .founder-offer h3 { font-size: 24px; margin-bottom: 8px; }
+       .founder-offer.price { font-size: 48px; font-weight: bold; }
+       .founder-offer.old-price { text-decoration: line-through; opacity: 0.7; font-size: 20px; }
+       .box {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+        }
+       .box h2 { color: #1e3a8a; font-size: 32px; margin-bottom: 10px; }
+       .box p { color: #64748b; margin-bottom: 30px; font-size: 18px; }
+        input[type="file"] {
+            width: 100%;
+            padding: 20px;
+            border: 3px dashed #3b82f6;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            background: #f8fafc;
+            color: #1e3a8a;
+            font-size: 16px;
+        }
+       .btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+       .btn:hover { transform: translateY(-2px); }
+       .btn:disabled { background: #6b7280; cursor: not-allowed; transform: none; }
+       .alert { background: #fef3c7; color: #92400e; padding: 12px; border-radius: 8px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="founder-offer">
+            <h3>🚀 عرض المؤسسين - مدى الحياة</h3>
+            <div>
+                <span class="old-price">499$</span>
+                <span class="price">99$</span>
+            </div>
+            <p>لأول 100 مشترك فقط + ضغط غير محدود</p>
+        </div>
 
-    {% with messages = get_flashed_messages() %}
-      {% if messages %}
-        <div class="alert">{{ messages[0] }}</div>
-      {% endif %}
-    {% endwith %}
+        <div class="box">
+            <h2>📄 اضغط ملف PDF</h2>
+            <p>قلل حجم ملفاتك 80% بضغطة وحدة</p>
 
-    <form method="post" enctype="multipart/form-data" id="compressForm">
-        <input type="file" name="file" accept=".pdf" required id="fileInput">
-        <button type="submit" class="btn" id="submitBtn">اضغط الآن</button>
-    </form>
-</div>
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert">{{ messages[0] }}</div>
+              {% endif %}
+            {% endwith %}
 
-<script>
-document.getElementById('compressForm').addEventListener('submit', function() {
-    const btn = document.getElementById('submitBtn');
-    const file = document.getElementById('fileInput').files[0];
+            <form method="post" enctype="multipart/form-data" id="compressForm">
+                <input type="file" name="file" accept=".pdf" required id="fileInput">
+                <button type="submit" class="btn" id="submitBtn">اضغط الآن</button>
+            </form>
+        </div>
+    </div>
 
-    if(file) {
-        btn.disabled = true;
-        btn.innerHTML = '⏳ جاري الضغط... انتظر ' + (file.size/1024/1024).toFixed(1) + 'MB';
-        btn.style.background = '#6b7280';
-        btn.style.cursor = 'not-allowed';
-    }
-});
-</script>
+    <script>
+    document.getElementById('compressForm').addEventListener('submit', function() {
+        const btn = document.getElementById('submitBtn');
+        const file = document.getElementById('fileInput').files[0];
+        if(file) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ جاري الضغط... انتظر ' + (file.size/1024/1024).toFixed(1) + 'MB';
+        }
+    });
+    </script>
+</body>
+</html>
