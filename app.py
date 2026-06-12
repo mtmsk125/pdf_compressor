@@ -5,6 +5,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = 'secret-key-123'
+
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -17,7 +18,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def compress_pdf(input_path, output_path):
-    # Ghostscript: ضغط قوي + رام قليل 60MB بس
+    # Ghostscript مباشرة - أخف شي عالرام 60MB بس
     cmd = [
         'gs', '-sDEVICE=pdfwrite', '-dCompatibilityLevel=1.4',
         '-dPDFSETTINGS=/ebook', '-dNOPAUSE', '-dQUIET', '-dBATCH',
@@ -46,12 +47,16 @@ def index():
 
             try:
                 compress_pdf(input_path, output_path)
-                return send_file(output_path, as_attachment=True)
+                return send_file(output_path, as_attachment=True, download_name='compressed_' + filename)
             except Exception as e:
-                flash(f'صار خطأ: {str(e)}')
+                flash(f'صار خطأ أثناء الضغط: {str(e)}')
                 return redirect(request.url)
+        else:
+            flash('نوع الملف غير مدعوم. ارفع PDF فقط')
+            return redirect(request.url)
 
     return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
+       
