@@ -6,11 +6,46 @@
     <title>ضاغط PDF + كل الأدوات مدى الحياة</title>
     <style>
         body {font-family: Tahoma; background: #0f172a; color: #fff; margin: 0; padding: 20px;}
-        .container {max-width: 800px; margin: auto;}
-        
-        .founder {background: linear-gradient(135deg,#fbbf24,#f59e0b); color: #000; padding: 30px 20px; border-radius: 15px; text-align: center; margin-bottom: 30px;}
-        .founder h1 {margin: 0 0 10px; font-size: 28px;}
-        .counter {font-size: 48px; font-weight: bold; margin: 15px 0;}
-        .btn {background: #10b981; color: #fff; border: none; padding: 16px 40px; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold;}
-        .btn:hover {background: #059669;}
-        .btn.founder-btn {background: #000; color: #fbbf24; font-size: 
+       .container {max-width: 800px; margin: auto;}
+
+       .founder {background: linear-gradient(135deg,#fbbf24,#f59e0b); color: #000; padding: 30px 20px; border-radius: 15px; text-align: center; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(251,191,36,0.3);}
+       .founder h1 {margin: 0 0 10px; font-size: 28px;}
+       .founder p {margin: 0; font-size: 16px;}
+       .counter {font-size: 48px; font-weight: bold; margin: 15px 0; color: #000;}
+       .btn {background: #10b981; color: #fff; border: none; padding: 16px 40px; border-radius: 10px; cursor: pointer; font-size: 18px; font-weight: bold; transition: all 0.3s;}
+       .btn:hover {background: #059669; transform: translateY(-2px);}
+       .btn.founder-btn {background: #000; color: #fbbf24; font-size: 20px; padding: 18px 50px; border: 2px solid #fbbf24;}
+       .btn.founder-btn:hover {background: #fbbf24; color: #000;}
+       .box {background: #1e293b; padding: 40px; border-radius: 15px; margin-top: 30px; text-align: center;}
+        input[type="file"] {margin: 20px 0; padding: 15px; background: #0f172a; border: 2px dashed #10b981; border-radius: 10px; width: 100%; color: #fff; cursor: pointer;}
+       .alert {background: #ef4444; color: white; padding: 12px; border-radius: 8px; margin-bottom: 20px;}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="founder">
+            <h1>عرض المؤسسين - مدى الحياة</h1>
+            <p>ضاغط PDF + كل الأدوات القادمة</p>
+            <div class="counter">99$</div>
+            <p>بدل 299$ - العرض لفترة محدودة</p>
+            <button class="btn founder-btn">اشترك الآن</button>
+        </div>
+
+        <div class="box">
+            <h2>اضغط ملف PDF</h2>
+            <p>قلل حجم ملفاتك 80% بضغطة وحدة</p>
+
+            {% with messages = get_flashed_messages() %}
+              {% if messages %}
+                <div class="alert">{{ messages[0] }}</div>
+              {% endif %}
+            {% endwith %}
+
+            <form method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".pdf" required>
+                <button type="submit" class="btn">اضغط الآن</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
