@@ -1,198 +1,67 @@
 <!DOCTYPE html>
-
-<html lang="ar" dir="rtl">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PDF Falcon</title>
+    <title>PDF Compression Store</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            text-align: center;
+            padding: 50px;
+        }
 
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            width: 400px;
+            margin: auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
 
-<style>
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
 
-body{
-background:linear-gradient(135deg,#0f172a,#1e293b);
-min-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-font-family:tahoma;
-padding:20px;
-}
+        button {
+            margin-top: 15px;
+            padding: 12px;
+            width: 100%;
+            background: #2d6cdf;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
 
-.box{
-background:#1e293b;
-padding:40px;
-border-radius:24px;
-width:100%;
-max-width:650px;
-color:white;
-box-shadow:0 15px 40px rgba(0,0,0,.35);
-}
-
-.logo{
-font-size:70px;
-text-align:center;
-margin-bottom:10px;
-}
-
-.drop-zone{
-border:2px dashed #3b82f6;
-padding:40px;
-border-radius:16px;
-text-align:center;
-cursor:pointer;
-transition:.3s;
-}
-
-.drop-zone:hover,
-.drop-zone.dragover{
-background:#172554;
-transform:scale(1.01);
-}
-
-.file-name{
-margin-top:15px;
-color:#cbd5e1;
-font-size:14px;
-word-break:break-all;
-}
-
-.btn-main{
-width:100%;
-background:#3b82f6;
-border:none;
-color:white;
-padding:15px;
-border-radius:12px;
-font-size:18px;
-font-weight:bold;
-margin-top:20px;
-transition:.3s;
-}
-
-.btn-main:hover{
-background:#2563eb;
-}
-
-.note{
-margin-top:20px;
-font-size:13px;
-color:#94a3b8;
-text-align:center;
-}
-
-.loader{
-display:none;
-margin-top:20px;
-}
-
-</style>
-
+        button:hover {
+            background: #1b4fb5;
+        }
+    </style>
 </head>
 
 <body>
 
 <div class="box">
 
-<div class="logo">🦅</div>
+    <h2>📦 PDF Compression Store</h2>
 
-<h2 class="text-center">PDF Falcon</h2>
+    <form action="/compress" method="post" enctype="multipart/form-data">
 
-<p class="text-center text-secondary">
-ضغط ملفات PDF بسرعة وجودة عالية
-</p>
+        <input type="file" name="file" multiple required>
 
-<form id="uploadForm"
-      action="/compress"
-      method="POST"
-      enctype="multipart/form-data">
+        <select name="level">
+            <option value="low">جودة عالية (حجم أكبر)</option>
+            <option value="medium" selected>متوسط (مفضل)</option>
+            <option value="high">ضغط قوي جداً</option>
+        </select>
 
-<div class="drop-zone" id="dropZone">
+        <button type="submit">ضغط الملفات</button>
 
-<div style="font-size:60px;">📄</div>
-
-<h5>اسحب الملف هنا أو اضغط للاختيار</h5>
-
-<input
-type="file"
-id="pdf"
-name="pdf_file"
-accept=".pdf"
-hidden
-required>
-
-<div class="file-name" id="fileName">
-لم يتم اختيار ملف
-</div>
+    </form>
 
 </div>
-
-<button type="submit" class="btn-main">
-🚀 ضغط الملف
-</button>
-
-<div class="loader" id="loader">
-
-<div class="progress">
-<div class="progress-bar progress-bar-striped progress-bar-animated"
-style="width:100%">
-جاري ضغط الملف...
-</div>
-</div>
-
-</div>
-
-</form>
-
-<div class="note">
-⚡ أول عملية قد تستغرق عدة ثوانٍ إذا كان الخادم في وضع السكون
-</div>
-
-</div>
-
-<script>
-
-const input = document.getElementById('pdf');
-const dropZone = document.getElementById('dropZone');
-const fileName = document.getElementById('fileName');
-const form = document.getElementById('uploadForm');
-const loader = document.getElementById('loader');
-
-dropZone.addEventListener('click', () => {
-input.click();
-});
-
-input.addEventListener('change', () => {
-if(input.files.length){
-fileName.innerText = input.files[0].name;
-}
-});
-
-dropZone.addEventListener('dragover', (e) => {
-e.preventDefault();
-dropZone.classList.add('dragover');
-});
-
-dropZone.addEventListener('dragleave', () => {
-dropZone.classList.remove('dragover');
-});
-
-dropZone.addEventListener('drop', (e) => {
-e.preventDefault();
-dropZone.classList.remove('dragover');
-
-if(e.dataTransfer.files.length){
-input.files = e.dataTransfer.files;
-fileName.innerText = e.dataTransfer.files[0].name;
-}
-});
-
-form.addEventListener('submit', () => {
-loader.style.display = 'block';
-});
-
-</script>
 
 </body>
 </html>
