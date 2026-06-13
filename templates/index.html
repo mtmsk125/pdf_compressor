@@ -1,85 +1,81 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>PDF Compressor Pro</title>
+<meta charset="UTF-8">
+<title>PDF Compressor Pro</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial;
-            background: linear-gradient(135deg, #4f46e5, #06b6d4);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+<style>
+body {
+    margin:0;
+    font-family: Arial;
+    background: linear-gradient(135deg,#4f46e5,#06b6d4);
+    height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
 
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 16px;
-            width: 420px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-            text-align: center;
-        }
+.card {
+    background:white;
+    padding:30px;
+    border-radius:18px;
+    width:400px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.2);
+    text-align:center;
+}
 
-        input, select {
-            width: 100%;
-            margin-top: 10px;
-            padding: 10px;
-        }
+input, select {
+    width:100%;
+    margin-top:10px;
+    padding:10px;
+}
 
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            border: none;
-            background: #4f46e5;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-        }
+button {
+    width:100%;
+    margin-top:15px;
+    padding:12px;
+    background:#4f46e5;
+    color:white;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+}
 
-        button:hover {
-            background: #3730a3;
-        }
+button:hover {
+    background:#3730a3;
+}
 
-        a {
-            display: block;
-            margin-top: 10px;
-            color: #4f46e5;
-        }
-    </style>
+.small {
+    font-size:12px;
+    color:gray;
+}
+</style>
 </head>
 
 <body>
 
 <div class="card">
 
-    <h2>📄 PDF Compressor Pro</h2>
-    <p>Welcome {{ user }}</p>
+<h2>📄 PDF Compressor Pro</h2>
+<p class="small">Welcome {{ user }}</p>
 
-    <a href="/logout">Logout</a>
+<form action="/compress" method="post" enctype="multipart/form-data">
 
-    <form action="/compress" method="post" enctype="multipart/form-data">
+<input type="file" name="file" required>
 
-        <input type="file" name="file" multiple required>
+<select name="level">
+    <option value="low">Fast Compression</option>
+    <option value="medium" selected>Balanced</option>
+    <option value="high">Maximum Compression</option>
+</select>
 
-        <select name="level">
-            <option value="low">High Quality</option>
-            <option value="medium" selected>Balanced</option>
-            <option value="high">Maximum Compression</option>
-        </select>
+<button type="submit">Compress PDF</button>
 
-        <button type="submit">Compress</button>
-
-    </form>
+</form>
 
 </div>
 
 </body>
 </html>
-   
 
 
