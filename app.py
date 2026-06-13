@@ -4,10 +4,14 @@ import os
 import uuid
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "secret-key-change-this"
+
+# =========================
+# SECRET KEY (مهم جداً للجلسات)
+# =========================
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
+
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "compressed"
@@ -198,7 +202,8 @@ def compress():
 
 
 # =========================
-# RUN SERVER
+# RUN SERVER (Render Ready)
 # =========================
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)
