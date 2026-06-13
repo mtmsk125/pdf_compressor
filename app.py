@@ -1,4 +1,4 @@
-    from flask import Flask, render_template, request, send_file, redirect
+from flask import Flask, render_template, request, send_file, redirect
 import subprocess
 import os
 import uuid
@@ -23,7 +23,7 @@ def compress_pdf(input_pdf, output_pdf):
             "gs",
             "-sDEVICE=pdfwrite",
             "-dCompatibilityLevel=1.4",
-            "-dPDFSETTINGS=/screen",
+            "-dPDFSETTINGS=/ebook",
             "-dNOPAUSE",
             "-dQUIET",
             "-dBATCH",
