@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect
+    from flask import Flask, render_template, request, send_file, redirect
 import subprocess
 import os
 import uuid
@@ -11,27 +11,36 @@ OUTPUT_FOLDER = "compressed"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-# الحد الأقصى 100 ميجابايت
 app.config["MAX_CONTENT_LENGTH"] = 100 * 1024 * 1024
 
 
 def compress_pdf(input_pdf, output_pdf):
 
-    subprocess.run(
+    print("START GS")
+
+    result = subprocess.run(
         [
             "gs",
             "-sDEVICE=pdfwrite",
             "-dCompatibilityLevel=1.4",
-            "-dPDFSETTINGS=/ebook",
+            "-dPDFSETTINGS=/screen",
             "-dNOPAUSE",
             "-dQUIET",
             "-dBATCH",
             f"-sOutputFile={output_pdf}",
             input_pdf,
         ],
-        check=True,
+        capture_output=True,
+        text=True,
         timeout=180,
     )
+
+    print("GS RETURN:", result.returncode)
+    print("GS STDOUT:", result.stdout)
+    print("GS STDERR:", result.stderr)
+
+    if result.returncode != 0:
+        raise Exception(result.stderr)
 
 
 @app.route("/")
@@ -41,6 +50,8 @@ def index():
 
 @app.route("/compress", methods=["POST"])
 def compress():
+
+    print("UPLOAD START")
 
     if "pdf_file" not in request.files:
         return redirect("/")
@@ -69,24 +80,22 @@ def compress():
 
         file.save(input_path)
 
+        print("FILE SAVED:", file.filename)
+
         compress_pdf(input_path, output_path)
 
-        response = send_file(
+        print("COMPRESSION DONE")
+
+        return send_file(
             output_path,
             as_attachment=True,
             download_name="compressed.pdf"
         )
 
-        return response
-
-    except subprocess.TimeoutExpired:
-        return "انتهت مهلة الضغط، الملف كبير جداً"
-
-    except subprocess.CalledProcessError as e:
-        return f"خطأ أثناء الضغط: {e}"
-
     except Exception as e:
-        return f"خطأ: {e}"
+
+        print("ERROR:", str(e))
+        return f"ERROR: {str(e)}"
 
     finally:
 
@@ -96,6 +105,7 @@ def compress():
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
+
     app.run(
         host="0.0.0.0",
         port=port
