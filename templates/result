@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Result</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:#0f172a;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.card{
+    background:#1e293b;
+    padding:30px;
+    border-radius:15px;
+    width:400px;
+    text-align:center;
+    box-shadow:0 20px 50px rgba(0,0,0,0.4);
+}
+
+.green{color:#22c55e;}
+.red{color:#f87171;}
+
+button{
+    margin-top:15px;
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:10px;
+    background:#22c55e;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#16a34a;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<h2>🎉 Compression Done</h2>
+
+<p>📦 Original Size: <b>{{ original }} KB</b></p>
+<p>📦 Compressed Size: <b>{{ compressed }} KB</b></p>
+
+<h3 class="green">💾 Saved: {{ savings }}%</h3>
+
+<a href="/download/{{ filename }}">
+<button>⬇ Download File</button>
+</a>
+
+</div>
+
+</body>
+</html>
