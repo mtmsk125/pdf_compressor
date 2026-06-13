@@ -6,12 +6,7 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-
-# =========================
-# SECRET KEY (مهم جداً للجلسات)
-# =========================
 app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-key")
-
 
 UPLOAD_FOLDER = "uploads"
 OUTPUT_FOLDER = "compressed"
@@ -20,31 +15,13 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
 
-# =========================
-# DATABASE
-# =========================
-def init_db():
-    conn = sqlite3.connect("users.db")
-    c = conn.cursor()
-
-    c.execute("""
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT UNIQUE,
-        password TEXT
-    )
-    """)
-
-    conn.commit()
-    conn.close()
-
-init_db()
+def get_size(path):
+    return os.path.getsize(path)
 
 
-# =========================
-# PDF COMPRESSION ENGINE
-# =========================
 def compress_pdf(input_pdf, output_pdf, level="medium"):
+
+    original_size = get_size(input_pdf)
 
     if level == "low":
         pdfset = "/ebook"
@@ -53,28 +30,15 @@ def compress_pdf(input_pdf, output_pdf, level="medium"):
     else:
         pdfset = "/ebook"
 
-    result = subprocess.run(
+    subprocess.run(
         [
             "gs",
             "-sDEVICE=pdfwrite",
             "-dCompatibilityLevel=1.4",
             f"-dPDFSETTINGS={pdfset}",
-
-            "-dDetectDuplicateImages=true",
-            "-dCompressFonts=true",
-
-            "-dDownsampleColorImages=true",
-            "-dDownsampleGrayImages=true",
-            "-dDownsampleMonoImages=true",
-
-            "-dColorImageResolution=120",
-            "-dGrayImageResolution=120",
-            "-dMonoImageResolution=120",
-
             "-dNOPAUSE",
             "-dBATCH",
             "-dQUIET",
-
             f"-sOutputFile={output_pdf}",
             input_pdf,
         ],
@@ -82,14 +46,13 @@ def compress_pdf(input_pdf, output_pdf, level="medium"):
         text=True
     )
 
-    if result.returncode != 0:
-        print(result.stderr)
-        raise Exception("Compression Failed")
+    compressed_size = get_size(output_pdf)
+
+    savings = round((1 - compressed_size / original_size) * 100, 2)
+
+    return original_size, compressed_size, savings
 
 
-# =========================
-# HOME
-# =========================
 @app.route("/")
 def index():
     if "user" not in session:
@@ -97,113 +60,38 @@ def index():
     return render_template("index.html", user=session["user"])
 
 
-# =========================
-# REGISTER
-# =========================
-@app.route("/register", methods=["GET", "POST"])
-def register():
-
-    if request.method == "POST":
-        username = request.form["username"]
-        password = generate_password_hash(request.form["password"])
-
-        conn = sqlite3.connect("users.db")
-        c = conn.cursor()
-
-        try:
-            c.execute("INSERT INTO users (username, password) VALUES (?, ?)",
-                      (username, password))
-            conn.commit()
-        except:
-            return "اسم المستخدم موجود"
-
-        conn.close()
-        return redirect("/login")
-
-    return """
-    <h2>Register</h2>
-    <form method="post">
-        <input name="username" placeholder="Username"><br>
-        <input name="password" type="password" placeholder="Password"><br>
-        <button>Register</button>
-    </form>
-    """
-
-
-# =========================
-# LOGIN
-# =========================
-@app.route("/login", methods=["GET", "POST"])
-def login():
-
-    if request.method == "POST":
-        username = request.form["username"]
-        password = request.form["password"]
-
-        conn = sqlite3.connect("users.db")
-        c = conn.cursor()
-
-        c.execute("SELECT * FROM users WHERE username=?", (username,))
-        user = c.fetchone()
-
-        conn.close()
-
-        if user and check_password_hash(user[2], password):
-            session["user"] = user[1]
-            return redirect("/")
-        else:
-            return "بيانات غير صحيحة"
-
-    return """
-    <h2>Login</h2>
-    <form method="post">
-        <input name="username"><br>
-        <input name="password" type="password"><br>
-        <button>Login</button>
-    </form>
-    """
-
-
-# =========================
-# LOGOUT
-# =========================
-@app.route("/logout")
-def logout():
-    session.pop("user", None)
-    return redirect("/login")
-
-
-# =========================
-# COMPRESS PDF
-# =========================
 @app.route("/compress", methods=["POST"])
 def compress():
 
     if "user" not in session:
         return redirect("/login")
 
-    files = request.files.getlist("file")
+    file = request.files["file"]
     level = request.form.get("level", "medium")
 
-    output_files = []
+    uid = str(uuid.uuid4())
 
-    for file in files:
-        uid = str(uuid.uuid4())
+    input_path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
+    output_path = os.path.join(OUTPUT_FOLDER, uid + "_compressed.pdf")
 
-        input_path = os.path.join(UPLOAD_FOLDER, uid + ".pdf")
-        output_path = os.path.join(OUTPUT_FOLDER, uid + "_compressed.pdf")
+    file.save(input_path)
 
-        file.save(input_path)
-        compress_pdf(input_path, output_path, level)
+    original, compressed, savings = compress_pdf(input_path, output_path, level)
 
-        output_files.append(output_path)
+    return render_template(
+        "result.html",
+        original=round(original / 1024, 2),
+        compressed=round(compressed / 1024, 2),
+        savings=savings,
+        filename=os.path.basename(output_path)
+    )
 
-    return send_file(output_files[0], as_attachment=True)
+
+@app.route("/download/<filename>")
+def download(filename):
+    return send_file(os.path.join(OUTPUT_FOLDER, filename), as_attachment=True)
 
 
-# =========================
-# RUN SERVER (Render Ready)
-# =========================
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=False)
