@@ -8,11 +8,10 @@
 body{background:#0a0f1e;color:#e2e8f0}
 header{background:#0f172a;border-bottom:1px solid #1e293b;padding:18px 5%}
 .logo{font-size:28px;font-weight:800;color:#fbbf24}
-.logo span{color:#3b82f6}
 .hero{text-align:center;padding:80px 20px}
 .hero h1{font-size:52px;margin-bottom:20px;font-weight:800}
 .hero h1 span{color:#fbbf24}
-.upload-box{max-width:750px;margin:0 auto 80px;background:linear-gradient(145deg,#1e293b,#0f172a);border:2px dashed #fbbf24;border-radius:25px;padding:70px 40px;box-shadow:0 0 50px rgba(251,191,36,0.15)}
+.upload-box{max-width:750px;margin:0 auto 80px;background:linear-gradient(145deg,#1e293b,#0f172a);border:2px dashed #fbbf24;border-radius:25px;padding:70px 40px;box-shadow:0 0 50px rgba(251,191,36,0.15);position:relative}
 .upload-icon{font-size:75px;margin-bottom:25px;filter:drop-shadow(0 0 25px #fbbf24)}
 .btn-primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0f1e;border:none;padding:18px 50px;border-radius:12px;font-size:19px;font-weight:bold;cursor:pointer}
 input[type=file]{display:none}
@@ -22,6 +21,15 @@ input[type=file]{display:none}
 .tool-icon{font-size:45px;margin-bottom:18px}
 .tool-card h4{font-size:19px;margin-bottom:10px;color:#fbbf24}
 .badge{background:#3b82f6;color:white;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:bold}
+
+/* شريط التحميل الجديد تبع فالكون */
+.loading-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,15,30,0.95);border-radius:25px;justify-content:center;align-items:center;flex-direction:column;z-index:100}
+.loading-overlay.active{display:flex}
+.spinner{width:70px;height:70px;border:5px solid #334155;border-top:5px solid #fbbf24;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:25px}
+@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.loading-text{font-size:22px;color:#fbbf24;font-weight:bold;margin-bottom:10px}
+.loading-sub{color:#94a3b8;font-size:15px}
+
 @media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:500px){.tools-grid{grid-template-columns:1fr}}
 </style>
@@ -33,11 +41,18 @@ input[type=file]{display:none}
 <section class="hero">
 <h1>حلّق بأعلى مستوى مع <span>فالكون Falcon</span></h1>
 
-<div class="upload-box">
+<div class="upload-box" id="compress-box">
+<!-- شريط التحميل -->
+<div class="loading-overlay" id="loading">
+<div class="spinner"></div>
+<div class="loading-text">🦅 فالكون قاعد بضغط ملفك...</div>
+<div class="loading-sub">باستخدم تقنية Ghostscript القوية</div>
+</div>
+
 <div class="upload-icon">🦅</div>
 <h3>ضغط PDF فالكون</h3>
-<form method="post" enctype="multipart/form-data">
-<input type="file" name="file" id="compress-file" accept=".pdf" required onchange="this.form.submit()">
+<form method="post" enctype="multipart/form-data" id="compress-form">
+<input type="file" name="file" id="compress-file" accept=".pdf" required>
 <label for="compress-file" class="btn-primary">اختر الملف للضغط</label>
 </form>
 </div>
@@ -87,11 +102,20 @@ input[type=file]{display:none}
 </form>
 
 <script>
+// شريط التحميل للضغط
+document.getElementById('compress-file').onchange = function(){
+    if(this.files.length > 0){
+        document.getElementById('loading').classList.add('active');
+        document.getElementById('compress-form').submit();
+    }
+}
+
 function mergeClick(){
     document.getElementById('merge-files').click();
 }
 document.getElementById('merge-files').onchange = function(){
     if(this.files.length > 1){
+        alert('🦅 فالكون قاعد بدمج الملفات... استنى شوي');
         document.getElementById('merge-form').submit();
     } else {
         alert('اختر ملفين PDF على الأقل للدمج');
@@ -99,9 +123,10 @@ document.getElementById('merge-files').onchange = function(){
 }
 
 function splitClick(){
-    let pages = prompt('اكتب أرقام الصفحات اللي بدك تفصلها:\n\nمثال: 1-3,5,7-9\nيعني صفحات 1 إلى 3 + صفحة 5 + 7 إلى 9');
+    let pages = prompt('اكتب أرقام الصفحات:\nمثال: 1-3,5,7-9');
     if(pages && pages.trim() != ''){
         document.getElementById('split-pages').value = pages;
+        alert('🦅 فالكون قاعد بفصل الصفحات... استنى شوي');
         document.getElementById('split-file').click();
     }
 }
