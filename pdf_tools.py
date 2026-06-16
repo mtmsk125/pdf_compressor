@@ -2,17 +2,26 @@ from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 
 def merge_pdf(files, output):
     merger = PdfMerger()
-    for f in files: merger.append(f)
+    for f in files:
+        merger.append(f)
     merger.write(output)
     merger.close()
 
 def split_pdf(input_file, pages, output):
     reader = PdfReader(input_file)
     writer = PdfWriter()
-    for p in pages.split(','):
-        if '-' in p:
-            s,e = map(int, p.split('-'))
-            for i in range(s-1, e): writer.add_page(reader.pages[i])
+
+    for part in pages.split(','):
+        part = part.strip()
+        if '-' in part:
+            s, e = map(int, part.split('-'))
+            for i in range(s-1, e):
+                if i < len(reader.pages):
+                    writer.add_page(reader.pages[i])
         else:
-            writer.add_page(reader.pages[int(p)-1])
-    with open(output, 'wb') as f: writer.write(f)
+            i = int(part) - 1
+            if i < len(reader.pages):
+                writer.add_page(reader.pages[i])
+
+    with open(output, 'wb') as f:
+        writer.write(f)
