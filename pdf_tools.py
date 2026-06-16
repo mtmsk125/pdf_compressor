@@ -1,43 +1,18 @@
-import os
-from PyPDF2 import PdfReader, PdfWriter
-from flask import request, send_file
+from PyPDF2 import PdfMerger, PdfReader, PdfWriter
 
-UPLOAD_FOLDER = 'uploads'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+def merge_pdf(files, output):
+    merger = PdfMerger()
+    for f in files: merger.append(f)
+    merger.write(output)
+    merger.close()
 
-def compress_pdf():
-    if 'file' not in request.files:
-        return "لا يوجد ملف", 400
-    
-    file = request.files['file']
-    if file.filename == '':
-        return "لم يتم اختيار ملف", 400
-    
-    input_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    output_path = os.path.join(UPLOAD_FOLDER, 'compressed.pdf')
-    
-    file.save(input_path)
-    
-    reader = PdfReader(input_path)
+def split_pdf(input_file, pages, output):
+    reader = PdfReader(input_file)
     writer = PdfWriter()
-    
-    for page in reader.pages:
-        page.compress_content_streams()
-        writer.add_page(page)
-    
-    with open(output_path, 'wb') as f:
-        writer.write(f)
-    
-    return send_file(output_path, as_attachment=True)
-
-def merge_pdf():
-    return "قريباً - دمج ملفات PDF", 200
-
-def split_pdf():
-    return "قريباً - تقسيم PDF", 200
-
-def pdf_to_word():
-    return "قريباً - تحويل PDF لوورد", 200
-
-def word_to_pdf():
-    return "قريباً - تحويل وورد لـ PDF", 200
+    for p in pages.split(','):
+        if '-' in p:
+            s,e = map(int, p.split('-'))
+            for i in range(s-1, e): writer.add_page(reader.pages[i])
+        else:
+            writer.add_page(reader.pages[int(p)-1])
+    with open(output, 'wb') as f: writer.write(f)
