@@ -1,141 +1,178 @@
 <!DOCTYPE html>
-<html dir="rtl" lang="ar">
+<html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>فالكون Falcon</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma}
-body{background:#0a0f1e;color:#e2e8f0}
-header{background:#0f172a;border-bottom:1px solid #1e293b;padding:18px 5%}
-.logo{font-size:28px;font-weight:800;color:#fbbf24}
-.hero{text-align:center;padding:80px 20px}
-.hero h1{font-size:52px;margin-bottom:20px;font-weight:800}
-.hero h1 span{color:#fbbf24}
-.upload-box{max-width:750px;margin:0 auto 80px;background:linear-gradient(145deg,#1e293b,#0f172a);border:2px dashed #fbbf24;border-radius:25px;padding:70px 40px;box-shadow:0 0 50px rgba(251,191,36,0.15);position:relative}
-.upload-icon{font-size:75px;margin-bottom:25px;filter:drop-shadow(0 0 25px #fbbf24)}
-.btn-primary{background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0f1e;border:none;padding:18px 50px;border-radius:12px;font-size:19px;font-weight:bold;cursor:pointer}
-input[type=file]{display:none}
-.tools-grid{max-width:1100px;margin:auto;display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:0 5% 100px}
-.tool-card{background:#1e293b;border:1px solid #334155;border-radius:18px;padding:35px 20px;text-align:center;transition:0.3s;cursor:pointer}
-.tool-card:hover{border-color:#fbbf24;transform:translateY(-7px)}
-.tool-icon{font-size:45px;margin-bottom:18px}
-.tool-card h4{font-size:19px;margin-bottom:10px;color:#fbbf24}
-.badge{background:#3b82f6;color:white;padding:4px 10px;border-radius:6px;font-size:12px;font-weight:bold}
-
-/* شريط التحميل الجديد تبع فالكون */
-.loading-overlay{display:none;position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(10,15,30,0.95);border-radius:25px;justify-content:center;align-items:center;flex-direction:column;z-index:100}
-.loading-overlay.active{display:flex}
-.spinner{width:70px;height:70px;border:5px solid #334155;border-top:5px solid #fbbf24;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:25px}
-@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-.loading-text{font-size:22px;color:#fbbf24;font-weight:bold;margin-bottom:10px}
-.loading-sub{color:#94a3b8;font-size:15px}
-
-@media(max-width:900px){.tools-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:500px){.tools-grid{grid-template-columns:1fr}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>فالكون PDF - ضغط ودمج وتقسيم</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+        }
+        .tab {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .tab.active {
+            background: #00ff88;
+            color: #1e3c72;
+            font-weight: bold;
+        }
+        .form-box {
+            display: none;
+        }
+        .form-box.active {
+            display: block;
+        }
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            margin: 15px 0;
+            background: rgba(255,255,255,0.1);
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+        button {
+            width: 100%;
+            padding: 15px;
+            background: #00ff88;
+            border: none;
+            border-radius: 10px;
+            color: #1e3c72;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,255,136,0.4);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        #timer {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 22px;
+            color: #00ff88;
+            font-weight: bold;
+        }
+        #timer.slow {
+            color: #ff4444;
+        }
+        .note {
+            margin-top: 20px;
+            font-size: 14px;
+            opacity: 0.7;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>🦅 فالكون PDF</h1>
+        
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('compress')">ضغط</button>
+            <button class="tab" onclick="showTab('merge')">دمج</button>
+            <button class="tab" onclick="showTab('split')">تقسيم</button>
+        </div>
 
-<header><div class="logo">🦅 فالكون <span>Falcon</span></div></header>
+        <!-- ضغط -->
+        <div id="compress" class="form-box active">
+            <form id="compressForm" action="/compress" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".pdf" required>
+                <button type="submit" id="compressBtn">اضغط PDF</button>
+                <div id="timer">
+                    ⏱️ الوقت: <span id="seconds">0</span> ثانية
+                </div>
+                <p class="note">الضغط القوي: 100 DPI = حجم صغير جداً</p>
+            </form>
+        </div>
 
-<section class="hero">
-<h1>حلّق بأعلى مستوى مع <span>فالكون Falcon</span></h1>
+        <!-- دمج -->
+        <div id="merge" class="form-box">
+            <form action="/merge" method="post" enctype="multipart/form-data">
+                <input type="file" name="files" accept=".pdf" multiple required>
+                <button type="submit">ادمج PDFs</button>
+                <p class="note">اختار أكثر من ملف للدمج</p>
+            </form>
+        </div>
 
-<div class="upload-box" id="compress-box">
-<!-- شريط التحميل -->
-<div class="loading-overlay" id="loading">
-<div class="spinner"></div>
-<div class="loading-text">🦅 فالكون قاعد بضغط ملفك...</div>
-<div class="loading-sub">باستخدم تقنية Ghostscript القوية</div>
-</div>
+        <!-- تقسيم -->
+        <div id="split" class="form-box">
+            <form action="/split" method="post" enctype="multipart/form-data">
+                <input type="file" name="file" accept=".pdf" required>
+                <button type="submit">قسم PDF</button>
+                <p class="note">رح ينقسم صفحة صفحة</p>
+            </form>
+        </div>
+    </div>
 
-<div class="upload-icon">🦅</div>
-<h3>ضغط PDF فالكون</h3>
-<form method="post" enctype="multipart/form-data" id="compress-form">
-<input type="file" name="file" id="compress-file" accept=".pdf" required>
-<label for="compress-file" class="btn-primary">اختر الملف للضغط</label>
-</form>
-</div>
-</section>
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.form-box').forEach(box => box.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
 
-<section class="tools-grid">
-<div class="tool-card" style="opacity:0.6">
-<div class="tool-icon">📄</div>
-<h4>PDF ↔ Word</h4>
-<p>تحويل ذكي <span class="badge">قريبا</span></p>
-</div>
+        let startTime;
+        let timerInterval;
 
-<div class="tool-card" onclick="splitClick()">
-<div class="tool-icon">✂️</div>
-<h4>فصل PDF</h4>
-<p>استخرج الصفحات اللي بدك إياها</p>
-</div>
-
-<div class="tool-card" onclick="mergeClick()">
-<div class="tool-icon">🔗</div>
-<h4>دمج PDF</h4>
-<p>ادمج عدة ملفات بملف واحد</p>
-</div>
-
-<div class="tool-card" onclick="document.getElementById('compress-file').click()">
-<div class="tool-icon">🗜️</div>
-<h4>ضغط PDF فالكون</h4>
-<p>ضغط قوي حتى 70% - تقنية Ghostscript</p>
-</div>
-
-<div class="tool-card" style="opacity:0.6;grid-column:4">
-<div class="tool-icon">📐</div>
-<h4>DWG ↔ PDF</h4>
-<p>للمهندسين <span class="badge">حصري</span></p>
-</div>
-</section>
-
-<!-- فورم الدمج -->
-<form action="/merge" method="post" enctype="multipart/form-data" id="merge-form" style="display:none">
-<input type="file" name="files" id="merge-files" multiple accept=".pdf">
-</form>
-
-<!-- فورم الفصل -->
-<form action="/split" method="post" enctype="multipart/form-data" id="split-form" style="display:none">
-<input type="file" name="file" id="split-file" accept=".pdf">
-<input type="hidden" name="pages" id="split-pages">
-</form>
-
-<script>
-// شريط التحميل للضغط
-document.getElementById('compress-file').onchange = function(){
-    if(this.files.length > 0){
-        document.getElementById('loading').classList.add('active');
-        document.getElementById('compress-form').submit();
-    }
-}
-
-function mergeClick(){
-    document.getElementById('merge-files').click();
-}
-document.getElementById('merge-files').onchange = function(){
-    if(this.files.length > 1){
-        alert('🦅 فالكون قاعد بدمج الملفات... استنى شوي');
-        document.getElementById('merge-form').submit();
-    } else {
-        alert('اختر ملفين PDF على الأقل للدمج');
-    }
-}
-
-function splitClick(){
-    let pages = prompt('اكتب أرقام الصفحات:\nمثال: 1-3,5,7-9');
-    if(pages && pages.trim() != ''){
-        document.getElementById('split-pages').value = pages;
-        alert('🦅 فالكون قاعد بفصل الصفحات... استنى شوي');
-        document.getElementById('split-file').click();
-    }
-}
-document.getElementById('split-file').onchange = function(){
-    if(this.files.length > 0){
-        document.getElementById('split-form').submit();
-    }
-}
-</script>
-
+        document.getElementById('compressForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('compressBtn');
+            btn.disabled = true;
+            btn.innerText = 'جاري الضغط...';
+            
+            startTime = Date.now();
+            document.getElementById('timer').style.display = 'block';
+            document.getElementById('seconds').innerText = '0';
+            
+            timerInterval = setInterval(function() {
+                let elapsed = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('seconds').innerText = elapsed;
+                
+                // لو طول أكثر من 30 ثانية صير أحمر
+                if (elapsed > 30) {
+                    document.getElementById('timer').classList.add('slow');
+                }
+            }, 1000);
+        });
+    </script>
 </body>
 </html>
