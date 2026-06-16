@@ -1,178 +1,135 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فالكون PDF - ضغط ودمج وتقسيم</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            color: white;
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 50px auto;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-        }
-        h1 {
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 32px;
-        }
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .tab {
-            flex: 1;
-            padding: 12px;
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            border-radius: 10px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .tab.active {
-            background: #00ff88;
-            color: #1e3c72;
-            font-weight: bold;
-        }
-        .form-box {
-            display: none;
-        }
-        .form-box.active {
-            display: block;
-        }
-        input[type="file"] {
-            width: 100%;
-            padding: 15px;
-            margin: 15px 0;
-            background: rgba(255,255,255,0.1);
-            border: 2px dashed rgba(255,255,255,0.3);
-            border-radius: 10px;
-            color: white;
-            cursor: pointer;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: #00ff88;
-            border: none;
-            border-radius: 10px;
-            color: #1e3c72;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 20px rgba(0,255,136,0.4);
-        }
-        button:disabled {
-            background: #555;
-            cursor: not-allowed;
-        }
-        #timer {
-            display: none;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 22px;
-            color: #00ff88;
-            font-weight: bold;
-        }
-        #timer.slow {
-            color: #ff4444;
-        }
-        .note {
-            margin-top: 20px;
-            font-size: 14px;
-            opacity: 0.7;
-            text-align: center;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فالكون PDF 🦅</title>
+<style>
+body {
+    background: #1e3c72;
+    font-family: 'Segoe UI', Tahoma;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+}
+.container {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(10px);
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+h1 { text-align: center; margin-bottom: 30px; font-size: 28px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 25px; }
+.tab {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+}
+.tab.active { background: #00ff88; color: #1e3c72; font-weight: bold; }
+.form-box { display: none; }
+.form-box.active { display: block; }
+input[type="file"] {
+    width: 100%;
+    padding: 15px;
+    margin: 15px 0;
+    background: rgba(255,255,255,0.1);
+    border: 2px dashed rgba(255,255,255,0.3);
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+}
+button {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    background: #00ff88;
+    color: #1e3c72;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+}
+button:disabled { background: #555; cursor: not-allowed; }
+#timer {
+    display: none;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 20px;
+    color: #00ff88;
+    font-weight: bold;
+}
+.note { text-align: center; margin-top: 15px; font-size: 14px; opacity: 0.7; }
+</style>
 </head>
 <body>
-    <div class="container">
-        <h1>🦅 فالكون PDF</h1>
-        
-        <div class="tabs">
-            <button class="tab active" onclick="showTab('compress')">ضغط</button>
-            <button class="tab" onclick="showTab('merge')">دمج</button>
-            <button class="tab" onclick="showTab('split')">تقسيم</button>
-        </div>
-
-        <!-- ضغط -->
-        <div id="compress" class="form-box active">
-            <form id="compressForm" action="/compress" method="post" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".pdf" required>
-                <button type="submit" id="compressBtn">اضغط PDF</button>
-                <div id="timer">
-                    ⏱️ الوقت: <span id="seconds">0</span> ثانية
-                </div>
-                <p class="note">الضغط القوي: 100 DPI = حجم صغير جداً</p>
-            </form>
-        </div>
-
-        <!-- دمج -->
-        <div id="merge" class="form-box">
-            <form action="/merge" method="post" enctype="multipart/form-data">
-                <input type="file" name="files" accept=".pdf" multiple required>
-                <button type="submit">ادمج PDFs</button>
-                <p class="note">اختار أكثر من ملف للدمج</p>
-            </form>
-        </div>
-
-        <!-- تقسيم -->
-        <div id="split" class="form-box">
-            <form action="/split" method="post" enctype="multipart/form-data">
-                <input type="file" name="file" accept=".pdf" required>
-                <button type="submit">قسم PDF</button>
-                <p class="note">رح ينقسم صفحة صفحة</p>
-            </form>
-        </div>
+<div class="container">
+    <h1>فالكون PDF 🦅</h1>
+    
+    <div class="tabs">
+        <button class="tab" onclick="showTab('split')">تقسيم</button>
+        <button class="tab" onclick="showTab('merge')">دمج</button>
+        <button class="tab active" onclick="showTab('compress')">ضغط</button>
     </div>
 
-    <script>
-        function showTab(tabName) {
-            document.querySelectorAll('.form-box').forEach(box => box.classList.remove('active'));
-            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
-        }
+    <div id="compress" class="form-box active">
+        <form id="compressForm" action="/compress" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit" id="btn">ضغط</button>
+            <div id="timer">الوقت: <span id="seconds">0</span> ثانية ⏱️</div>
+            <p class="note">الضغط القوي: DPI 100 = حجم صغير جداً</p>
+        </form>
+    </div>
 
-        let startTime;
-        let timerInterval;
+    <div id="merge" class="form-box">
+        <form action="/merge" method="post" enctype="multipart/form-data">
+            <input type="file" name="files" accept=".pdf" multiple required>
+            <button type="submit">دمج</button>
+        </form>
+    </div>
 
-        document.getElementById('compressForm').addEventListener('submit', function(e) {
-            const btn = document.getElementById('compressBtn');
-            btn.disabled = true;
-            btn.innerText = 'جاري الضغط...';
-            
-            startTime = Date.now();
-            document.getElementById('timer').style.display = 'block';
-            document.getElementById('seconds').innerText = '0';
-            
-            timerInterval = setInterval(function() {
-                let elapsed = Math.floor((Date.now() - startTime) / 1000);
-                document.getElementById('seconds').innerText = elapsed;
-                
-                // لو طول أكثر من 30 ثانية صير أحمر
-                if (elapsed > 30) {
-                    document.getElementById('timer').classList.add('slow');
-                }
-            }, 1000);
-        });
-    </script>
+    <div id="split" class="form-box">
+        <form action="/split" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit">تقسيم</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function showTab(name) {
+    document.querySelectorAll('.form-box').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    event.target.classList.add('active');
+}
+
+let startTime, timerInterval;
+document.getElementById('compressForm').addEventListener('submit', function() {
+    const btn = document.getElementById('btn');
+    btn.disabled = true;
+    btn.innerText = 'جاري الضغط...';
+    
+    startTime = Date.now();
+    document.getElementById('timer').style.display = 'block';
+    document.getElementById('seconds').innerText = '0';
+    
+    timerInterval = setInterval(function() {
+        let elapsed = Math.floor((Date.now() - startTime) / 1000);
+        document.getElementById('seconds').innerText = elapsed;
+        if(elapsed > 30) document.getElementById('timer').style.color = '#ff4444';
+    }, 1000);
+});
+</script>
 </body>
 </html>
