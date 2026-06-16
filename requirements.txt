@@ -1,3 +1,4 @@
-Flask
-PyMuPDF
-gunicorn
+Flask==3.0.0
+gunicorn==21.2.0
+PyPDF2==3.0.1
+Werkzeug==3.0.1
