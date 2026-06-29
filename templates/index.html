@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>فالكون PDF 🦅</title>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-21294XS884"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-21294XS884');
+</script>
+
 <style>
 body {
     background: #1e3c72;
@@ -34,102 +45,18 @@ h1 { text-align: center; margin-bottom: 30px; font-size: 28px; }
     background: rgba(255,255,255,0.2);
     color: white;
     cursor: pointer;
-    font-size: 16px;
 }
-.tab.active { background: #00ff88; color: #1e3c72; font-weight: bold; }
-.form-box { display: none; }
-.form-box.active { display: block; }
-input[type="file"] {
-    width: 100%;
-    padding: 15px;
-    margin: 15px 0;
-    background: rgba(255,255,255,0.1);
-    border: 2px dashed rgba(255,255,255,0.3);
-    border-radius: 10px;
-    color: white;
-    cursor: pointer;
-}
-button {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 10px;
-    background: #00ff88;
-    color: #1e3c72;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-}
-button:disabled { background: #555; cursor: not-allowed; }
-#timer {
-    display: none;
-    text-align: center;
-    margin-top: 15px;
-    font-size: 20px;
-    color: #00ff88;
-    font-weight: bold;
-}
-.note { text-align: center; margin-top: 15px; font-size: 14px; opacity: 0.7; }
 </style>
 </head>
 <body>
-<div class="container">
-    <h1>فالكون PDF 🦅</h1>
-    
-    <div class="tabs">
-        <button class="tab" onclick="showTab('split')">تقسيم</button>
-        <button class="tab" onclick="showTab('merge')">دمج</button>
-        <button class="tab active" onclick="showTab('compress')">ضغط</button>
+
+    <div class="container">
+        <h1>فالكون PDF 🦅</h1>
+        <div class="tabs">
+            <button class="tab">أداة الضغط</button>
+            <!-- يمكنك إضافة بقية التبويبات أو العناصر هنا -->
+        </div>
     </div>
 
-    <div id="compress" class="form-box active">
-        <form id="compressForm" action="/compress" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".pdf" required>
-            <button type="submit" id="btn">ضغط</button>
-            <div id="timer">الوقت: <span id="seconds">0</span> ثانية ⏱️</div>
-            <p class="note">الضغط القوي: DPI 100 = حجم صغير جداً</p>
-        </form>
-    </div>
-
-    <div id="merge" class="form-box">
-        <form action="/merge" method="post" enctype="multipart/form-data">
-            <input type="file" name="files" accept=".pdf" multiple required>
-            <button type="submit">دمج</button>
-        </form>
-    </div>
-
-    <div id="split" class="form-box">
-        <form action="/split" method="post" enctype="multipart/form-data">
-            <input type="file" name="file" accept=".pdf" required>
-            <button type="submit">تقسيم</button>
-        </form>
-    </div>
-</div>
-
-<script>
-function showTab(name) {
-    document.querySelectorAll('.form-box').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    document.getElementById(name).classList.add('active');
-    event.target.classList.add('active');
-}
-
-let startTime, timerInterval;
-document.getElementById('compressForm').addEventListener('submit', function() {
-    const btn = document.getElementById('btn');
-    btn.disabled = true;
-    btn.innerText = 'جاري الضغط...';
-    
-    startTime = Date.now();
-    document.getElementById('timer').style.display = 'block';
-    document.getElementById('seconds').innerText = '0';
-    
-    timerInterval = setInterval(function() {
-        let elapsed = Math.floor((Date.now() - startTime) / 1000);
-        document.getElementById('seconds').innerText = elapsed;
-        if(elapsed > 30) document.getElementById('timer').style.color = '#ff4444';
-    }, 1000);
-});
-</script>
 </body>
 </html>
