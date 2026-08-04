@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تمت المعالجة بنجاح! 🦅 | فالكون PDF</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<!-- QRCode generator library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<style>
+body {
+    background: #0b0f19;
+    color: #f9fafb;
+    font-family: 'Tajawal', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 20px;
+}
+.box {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border-radius: 24px;
+    padding: 40px;
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+.success-icon { font-size: 56px; margin-bottom: 12px; }
+.savings-badge {
+    display: inline-block;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 8px 20px;
+    border-radius: 30px;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 15px 0;
+}
+.ad-slot {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 30px 15px;
+    margin: 20px 0;
+    color: #9ca3af;
+}
+.timer-box { font-size: 20px; color: #f59e0b; margin-bottom: 20px; font-weight: bold; }
+.btn-dl {
+    display: none;
+    background: #f59e0b;
+    color: #fff;
+    text-decoration: none;
+    padding: 16px 40px;
+    border-radius: 12px;
+    font-size: 20px;
+    font-weight: 700;
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+}
+.btn-dl:hover { background: #d97706; }
+.tool-chain {
+    margin-top: 35px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 25px;
+    text-align: right;
+}
+.chain-title { font-size: 16px; font-weight: 700; color: #f59e0b; margin-bottom: 12px; }
+.chain-links { display: flex; gap: 10px; flex-wrap: wrap; }
+.chain-btn {
+    background: rgba(255,255,255,0.06);
+    color: #f9fafb;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.chain-btn:hover { border-color: #f59e0b; color: #f59e0b; }
+
+.qr-section { margin-top: 20px; text-align: center; }
+#qrcode { display: inline-block; background: white; padding: 8px; border-radius: 8px; margin-top: 10px; }
+</style>
+</head>
+<body>
+
+<div class="box">
+    <div class="success-icon">✅</div>
+    <h2>تمت المعالجة بنجاح!</h2>
+    
+    {% if savings is defined and savings > 0 %}
+        <div class="savings-badge">🎉 تم توفير {{ savings }}% من حجم الملف الأصلي!</div>
+    {% endif %}
+
+    {% if message %}
+        <p style="color: #9ca3af; margin-top: 10px;">{{ message }}</p>
+    {% endif %}
+
+    <!-- Pre-Download Ad Gate Slot -->
+    <div class="ad-slot">
+        <p style="font-size: 12px; margin-bottom: 6px; color: #6b7280;">إعلان (Google AdSense Premium Slot)</p>
+        <div style="height: 120px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); border-radius: 8px;">
+            <span>مكان إعلان AdSense عالي العائد</span>
+        </div>
+    </div>
+
+    <!-- Countdown Timer -->
+    <div class="timer-box" id="timerBox">
+        سيتم تجهيز رابط التحميل خلال <span id="countdown">5</span> ثوانٍ... ⏳
+    </div>
+
+    <a href="/download/{{ filename }}" class="btn-dl" id="dlBtn">⬇️ تحميل الملف الآن</a>
+
+    <!-- QR Code for Instant Mobile Download -->
+    <div class="qr-section">
+        <p style="font-size: 13px; color: #9ca3af;">📱 امسح الكود لتنزيل الملف مباشرة على جوالك:</p>
+        <div id="qrcode"></div>
+    </div>
+
+    <!-- Automated Tool Chaining (Next Steps) -->
+    <div class="tool-chain">
+        <div class="chain-title">🔄 الخطوة التالية السريعة بنفس الملف:</div>
+        <div class="chain-links">
+            <a href="/" class="chain-btn">🔒 قفل الملف بكلمة سر</a>
+            <a href="/" class="chain-btn">📝 تلخيص الملف بالذكاء الاصطناعي</a>
+            <a href="/" class="chain-btn">🔍 استخراج النصوص OCR</a>
+            <a href="/" class="chain-btn">🔗 دمج مع ملف آخر</a>
+        </div>
+    </div>
+</div>
+
+<script>
+let count = 5;
+const timer = setInterval(() => {
+    count--;
+    document.getElementById('countdown').innerText = count;
+    if(count <= 0) {
+        clearInterval(timer);
+        document.getElementById('timerBox').style.display = 'none';
+        document.getElementById('dlBtn').style.display = 'inline-block';
+    }
+}, 1000);
+
+// Generate QR code for download URL
+const downloadUrl = window.location.origin + '/download/{{ filename }}';
+new QRCode(document.getElementById("qrcode"), {
+    text: downloadUrl,
+    width: 100,
+    height: 100
+});
+</script>
+</body>
+</html>

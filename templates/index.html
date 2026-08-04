@@ -1,62 +1,403 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>فالكون PDF 🦅</title>
+<title>فالكون PDF 🦅 | أدوات PDF وصور مجانية وذكية 100%</title>
+<meta name="description" content="منصة فالكون PDF المجانية لضغط وتجميع وتقسيم وتوقيع ملفات الـ PDF بأعلى جودة وبأمان تام داخل متصفحك مجاناً.">
 
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-21294XS884"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+<!-- Google Fonts (Outfit & Tajawal) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
 
-  gtag('config', 'G-21294XS884');
-</script>
+<!-- PDF.js library for Live PDF Preview -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
 <style>
+:root {
+    --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #111827 50%, #0d1322 100%);
+    --card-bg: rgba(255, 255, 255, 0.04);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --text-primary: #f9fafb;
+    --text-secondary: #9ca3af;
+    --accent: #f59e0b;
+    --accent-hover: #d97706;
+    --accent-glow: rgba(245, 158, 11, 0.25);
+    --success: #10b981;
+}
+
+[data-theme="light"] {
+    --bg-gradient: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    --card-bg: rgba(255, 255, 255, 0.85);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --text-primary: #111827;
+    --text-secondary: #4b5563;
+    --accent: #d97706;
+    --accent-hover: #b45309;
+    --accent-glow: rgba(217, 119, 6, 0.2);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Tajawal', sans-serif; transition: background 0.3s, color 0.3s; }
+
 body {
-    background: #1e3c72;
-    font-family: 'Segoe UI', Tahoma;
-    color: white;
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 8%;
+    background: rgba(0,0,0,0.2);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--card-border);
+}
+.logo { font-size: 26px; font-weight: 900; color: var(--accent); text-decoration: none; display: flex; align-items: center; gap: 8px; }
+nav { display: flex; gap: 20px; align-items: center; }
+nav a { color: var(--text-secondary); text-decoration: none; font-weight: 500; }
+nav a:hover { color: var(--accent); }
+.theme-btn {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    color: var(--text-primary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Main Container */
+.main-content {
+    flex: 1;
+    max-width: 1100px;
+    width: 90%;
+    margin: 40px auto;
+}
+
+/* Hero Section */
+.hero { text-align: center; margin-bottom: 40px; }
+.hero h1 { font-size: 42px; margin-bottom: 12px; font-weight: 900; }
+.hero p { color: var(--text-secondary); font-size: 18px; max-width: 650px; margin: 0 auto 20px; }
+.trust-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(16, 185, 129, 0.1);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* Categories & Tools Tabs */
+.tool-categories {
     display: flex;
     justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    margin: 0;
+    gap: 12px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
 }
-.container {
-    background: rgba(255,255,255,0.1);
-    backdrop-filter: blur(10px);
-    padding: 40px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-h1 { text-align: center; margin-bottom: 30px; font-size: 28px; }
-.tabs { display: flex; gap: 8px; margin-bottom: 25px; }
-.tab {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 10px;
-    background: rgba(255,255,255,0.2);
-    color: white;
+.cat-btn {
+    padding: 12px 24px;
+    border-radius: 14px;
+    border: 1px solid var(--card-border);
+    background: var(--card-bg);
+    color: var(--text-secondary);
+    font-weight: 700;
     cursor: pointer;
 }
+.cat-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.tools-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+    margin-bottom: 40px;
+}
+.tool-card {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+}
+.tool-card:hover, .tool-card.selected {
+    border-color: var(--accent);
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px var(--accent-glow);
+}
+.tool-icon { font-size: 36px; margin-bottom: 10px; }
+.tool-title { font-weight: 700; font-size: 17px; margin-bottom: 6px; }
+.tool-desc { font-size: 13px; color: var(--text-secondary); }
+
+/* Upload & Dropzone Box */
+.upload-box {
+    background: var(--card-bg);
+    border: 2px dashed var(--accent);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    margin-bottom: 40px;
+    position: relative;
+}
+.upload-icon { font-size: 48px; margin-bottom: 12px; color: var(--accent); }
+.file-input { display: none; }
+.btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 16px;
+    box-shadow: 0 4px 15px var(--accent-glow);
+}
+.btn-primary:hover { background: var(--accent-hover); }
+
+/* Live PDF Preview Canvas Area */
+#previewArea {
+    display: none;
+    margin-top: 25px;
+    text-align: center;
+}
+#pdfCanvas {
+    max-width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+/* Dynamic Tool Inputs */
+.tool-options { display: none; margin-top: 20px; text-align: right; max-width: 400px; margin-left: auto; margin-right: auto; }
+.input-group { margin-bottom: 14px; }
+.input-group label { display: block; margin-bottom: 6px; font-weight: 700; }
+.input-field {
+    width: 100%;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--card-border);
+    background: rgba(0,0,0,0.2);
+    color: var(--text-primary);
+}
+
+/* Ad Placement Placeholder */
+.ad-banner {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed var(--card-border);
+    padding: 20px;
+    text-align: center;
+    margin: 40px 0;
+    border-radius: 12px;
+    color: var(--text-secondary);
+}
+
+/* Footer */
+footer {
+    background: rgba(0,0,0,0.4);
+    padding: 30px;
+    text-align: center;
+    border-top: 1px solid var(--card-border);
+    margin-top: auto;
+}
+footer a { color: var(--text-secondary); margin: 0 10px; text-decoration: none; font-size: 14px; }
 </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>فالكون PDF 🦅</h1>
-        <div class="tabs">
-            <button class="tab">أداة الضغط</button>
-            <!-- يمكنك إضافة بقية التبويبات أو العناصر هنا -->
+<header>
+    <a href="/" class="logo">🦅 فالكون PDF</a>
+    <nav>
+        <a href="/blog">المدونة والإرشادات</a>
+        <a href="/about">من نحن</a>
+        <a href="/privacy">الخصوصية</a>
+        <button class="theme-btn" onclick="toggleTheme()">🌗 الوضع</button>
+    </nav>
+</header>
+
+<div class="main-content">
+    <div class="hero">
+        <h1>منصة الـ PDF والأدوات الذكية 🦅</h1>
+        <p>ضغط، تجميع، تقسيم، توقيع وتلخيص ملفاتك بأعلى دقة ومجاناً 100%.</p>
+        <div class="trust-badge">🛡️ 100% آمن وخاص - لا يتم حفظ ملفاتك على أي سيرفر</div>
+    </div>
+
+    <!-- AdSense Top Banner -->
+    <div class="ad-banner">
+        <span>مساحة إعلانية (Google AdSense Banner Slot)</span>
+    </div>
+
+    <!-- Category Selector -->
+    <div class="tool-categories">
+        <button class="cat-btn active" onclick="filterCategory('all', this)">كل الأدوات (15)</button>
+        <button class="cat-btn" onclick="filterCategory('compress', this)">الضغط والتعديل</button>
+        <button class="cat-btn" onclick="filterCategory('ai', this)">الذكاء الاصطناعي والـ OCR</button>
+        <button class="cat-btn" onclick="filterCategory('convert', this)">تحويل الصور</button>
+        <button class="cat-btn" onclick="filterCategory('security', this)">الأمان والتوقيع</button>
+    </div>
+
+    <!-- Tools Grid (15 Tools) -->
+    <div class="tools-grid">
+        <div class="tool-card selected" data-cat="compress" data-action="/compress" onclick="selectTool(this, 'compress')">
+            <div class="tool-icon">📦</div>
+            <div class="tool-title">ضغط PDF الذكي</div>
+            <div class="tool-desc">تصغير الحجم حتى 80% مع حفظ الجودة</div>
+        </div>
+        <div class="tool-card" data-cat="compress" data-action="/merge" onclick="selectTool(this, 'merge')">
+            <div class="tool-icon">🔗</div>
+            <div class="tool-title">دمج ملفات PDF</div>
+            <div class="tool-desc">تجميع عدة مستندات في ملف واحد</div>
+        </div>
+        <div class="tool-card" data-cat="compress" data-action="/split" onclick="selectTool(this, 'split')">
+            <div class="tool-icon">✂️</div>
+            <div class="tool-title">تقسيم واستخراج صفحات</div>
+            <div class="tool-desc">فصل أو استخراج صفحة مخصصة</div>
+        </div>
+        <div class="tool-card" data-cat="ai" data-action="/ocr" onclick="selectTool(this, 'ocr')">
+            <div class="tool-icon">🔍</div>
+            <div class="tool-title">استخراج النصوص OCR العربي</div>
+            <div class="tool-desc">قراءة النص من PDF مصور وصور</div>
+        </div>
+        <div class="tool-card" data-cat="ai" data-action="/summarize" onclick="selectTool(this, 'summarize')">
+            <div class="tool-icon">📝</div>
+            <div class="tool-title">التلخيص الذكي للـ PDF</div>
+            <div class="tool-desc">استخراج أهم نقاط الكتب والأبحاث</div>
+        </div>
+        <div class="tool-card" data-cat="security" data-action="/protect" onclick="selectTool(this, 'protect')">
+            <div class="tool-icon">🔒</div>
+            <div class="tool-title">حماية وقفل بكلمة سر</div>
+            <div class="tool-desc">تشفير المستند بكلمة مرور مسؤولة</div>
+        </div>
+        <div class="tool-card" data-cat="convert" data-action="/img2pdf" onclick="selectTool(this, 'img2pdf')">
+            <div class="tool-icon">🖼️</div>
+            <div class="tool-title">تحويل الصور لـ PDF</div>
+            <div class="tool-desc">تحويل مجموعة صور لمستند واحد</div>
+        </div>
+        <div class="tool-card" data-cat="convert" data-action="/img2webp" onclick="selectTool(this, 'img2webp')">
+            <div class="tool-icon">⚡</div>
+            <div class="tool-title">تحويل الصور لـ WebP</div>
+            <div class="tool-desc">تسريع أداء الصور للمواقع</div>
         </div>
     </div>
 
+    <!-- Upload Form -->
+    <form id="processForm" action="/compress" method="POST" enctype="multipart/form-data">
+        <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-icon">📁</div>
+            <h2>اسحب الملف هنا أو اضغط للاختيار</h2>
+            <p style="color: var(--text-secondary); margin-top: 8px;">يدعم PDF, PNG, JPG حتى 100 ميجابايت</p>
+            <input type="file" id="fileInput" name="file" class="file-input" onchange="handleFile(this)">
+            
+            <div id="fileInfo" style="margin-top: 15px; font-weight: bold; color: var(--accent);"></div>
+
+            <!-- Dynamic Options depending on selected tool -->
+            <div class="tool-options" id="toolOptions">
+                <div class="input-group" id="optPassword" style="display:none;">
+                    <label>كلمة السر المطلوبة:</label>
+                    <input type="password" name="password" class="input-field" placeholder="اكتب كلمة المرور لقفل الملف">
+                </div>
+                <div class="input-group" id="optPages" style="display:none;">
+                    <label>الصفحات المراد استخراجها (مثال: 1-3, 5):</label>
+                    <input type="text" name="pages" class="input-field" placeholder="1-5">
+                </div>
+            </div>
+
+            <!-- Live PDF Preview Container -->
+            <div id="previewArea">
+                <h4 style="margin-bottom: 10px;">👁️ معاينة فورية للصفحة الأولى:</h4>
+                <canvas id="pdfCanvas"></canvas>
+            </div>
+
+            <br>
+            <button type="submit" class="btn-primary" id="submitBtn">بدء المعالجة الفورية 🚀</button>
+        </div>
+    </form>
+</div>
+
+<footer>
+    <p>© 2026 فالكون PDF - جميع الحقوق محفوظة</p>
+    <p style="margin-top: 10px;">
+        <a href="/privacy">سياسة الخصوصية</a> |
+        <a href="/terms">شروط الاستخدام</a> |
+        <a href="/about">من نحن</a> |
+        <a href="/contact">اتصل بنا</a>
+    </p>
+</footer>
+
+<script>
+function toggleTheme() {
+    const html = document.documentElement;
+    html.setAttribute('data-theme', html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+}
+
+function filterCategory(cat, btn) {
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tool-card').forEach(card => {
+        if(cat === 'all' || card.getAttribute('data-cat') === cat) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+function selectTool(card, toolName) {
+    document.querySelectorAll('.tool-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    const form = document.getElementById('processForm');
+    form.action = card.getAttribute('data-action');
+    
+    // Show tool options
+    document.getElementById('optPassword').style.display = toolName === 'protect' ? 'block' : 'none';
+    document.getElementById('optPages').style.display = toolName === 'split' ? 'block' : 'none';
+    document.getElementById('toolOptions').style.display = (toolName === 'protect' || toolName === 'split') ? 'block' : 'none';
+}
+
+function handleFile(input) {
+    if(input.files && input.files[0]) {
+        const file = input.files[0];
+        document.getElementById('fileInfo').innerText = `الملف المختار: ${file.name} (${(file.size / (1024*1024)).toFixed(2)} MB)`;
+        
+        // Render Live Preview if PDF
+        if (file.type === 'application/pdf') {
+            const fileReader = new FileReader();
+            fileReader.onload = function() {
+                const typedarray = new Uint8Array(this.result);
+                pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                    pdf.getPage(1).then(page => {
+                        const viewport = page.getViewport({scale: 0.8});
+                        const canvas = document.getElementById('pdfCanvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
+                        
+                        page.render({canvasContext: context, viewport: viewport}).promise.then(() => {
+                            document.getElementById('previewArea').style.display = 'block';
+                        });
+                    });
+                });
+            };
+            fileReader.readAsArrayBuffer(file);
+        }
+    }
+}
+</script>
 </body>
 </html>
