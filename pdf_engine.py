@@ -1,11 +1,14 @@
 import os
 import time
+import tempfile
 from pypdf import PdfReader, PdfWriter
 from PIL import Image
 import io
 
-UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), 'uploads')
-COMPRESSED_FOLDER = os.path.join(os.path.dirname(__file__), 'compressed')
+# في بيئة Vercel Serverless يكون نظام الملفات للقراءة فقط عدا مجلد /tmp
+BASE_TEMP = tempfile.gettempdir()
+UPLOAD_FOLDER = os.path.join(BASE_TEMP, 'uploads')
+COMPRESSED_FOLDER = os.path.join(BASE_TEMP, 'compressed')
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(COMPRESSED_FOLDER, exist_ok=True)
@@ -17,7 +20,6 @@ def compress_pdf_file(input_path, output_path, quality_level='medium'):
         writer = PdfWriter()
 
         for page in reader.pages:
-            # تقليل جودة وحجم الصور داخل صفحات الـ PDF
             for img in page.images:
                 try:
                     img_data = img.data
@@ -36,7 +38,6 @@ def compress_pdf_file(input_path, output_path, quality_level='medium'):
 
             writer.add_page(page)
 
-        # تفعيل الضغط الفائق في pypdf
         for page in writer.pages:
             page.compress_content_streams()
 
@@ -46,7 +47,6 @@ def compress_pdf_file(input_path, output_path, quality_level='medium'):
         orig_size = os.path.getsize(input_path)
         new_size = os.path.getsize(output_path)
         
-        # إذا كان الحجم الجديد أكبر (بسبب عدم وجود صور)، نسخ الأصل مع ضغط طفيف
         if new_size >= orig_size and orig_size > 0:
             with open(input_path, 'rb') as src, open(output_path, 'wb') as dst:
                 dst.write(src.read())
@@ -148,17 +148,16 @@ def extract_and_summarize_pdf(input_path):
     try:
         reader = PdfReader(input_path)
         text_content = ""
-        for page in reader.pages[:10]: # أسرع أول 10 صفحات
+        for page in reader.pages[:10]:
             text = page.extract_text()
             if text:
                 text_content += text + "\n"
 
         if not text_content.strip():
-            return True, "لم يتم العثور على نص عادي قابل للقراءة مباشرة. (قد يكون مستنداً مصوراً يحتاج لـ OCR).", []
+            return True, "لم يتم العثور على نص عادي قابل للقراءة مباشرة.", []
 
-        # تلخيص استخراجي بسيط وذكي للنقاط الرئيسية
         lines = [line.strip() for line in text_content.split('\n') if len(line.strip()) > 20]
-        summary_points = lines[:7] # أهم 7 أسطر كملخص
+        summary_points = lines[:7]
 
         return True, text_content[:1500], summary_points
     except Exception as e:
