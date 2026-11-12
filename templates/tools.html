@@ -56,6 +56,9 @@
         <option value="remove">حذف صفحات محددة</option>
         <option value="duplicate">تكرار صفحات محددة</option>
         <option value="pageNumbers">إضافة أرقام الصفحات</option>
+        <option value="watermark">إضافة علامة مائية</option>
+        <option value="blankPages">إضافة صفحات فارغة</option>
+        <option value="info">معلومات الملف</option>
       </select>
       <label for="files">اختر ملفات PDF</label>
       <input id="files" type="file" accept="application/pdf,.pdf" multiple>
@@ -92,13 +95,14 @@
   function updateTool() {
     const mode = tool.value;
     const multiple = mode === 'merge';
-    const needsPages = ['extract', 'rotate', 'reorder', 'remove', 'duplicate'].includes(mode);
+    const needsPages = ['extract', 'rotate', 'reorder', 'remove', 'duplicate', 'watermark', 'blankPages'].includes(mode);
     pagesGroup.hidden = !needsPages;
     rotateGroup.hidden = mode !== 'rotate';
     filesInput.multiple = multiple;
     filesInput.value = '';
     fileList.textContent = 'لم تختر أي ملف بعد.';
     pagesInput.value = '';
+
     if (mode === 'reorder') {
       pagesLabel.textContent = 'ترتيب الصفحات الجديد';
       pagesInput.placeholder = 'مثال: 3,1,2';
@@ -107,6 +111,14 @@
       pagesLabel.textContent = 'الصفحات المراد تدويرها';
       pagesInput.placeholder = 'مثال: 1-3، 5';
       pagesHint.textContent = 'اكتب الصفحات التي تريد تدويرها. اترك باقي الصفحات دون تغيير.';
+    } else if (mode === 'watermark') {
+      pagesLabel.textContent = 'نص العلامة المائية';
+      pagesInput.placeholder = 'مثال: فالكون PDF';
+      pagesHint.textContent = 'اكتب نص العلامة المائية المراد إضافتها على كل صفحة.';
+    } else if (mode === 'blankPages') {
+      pagesLabel.textContent = 'عدد الصفحات الفارغة';
+      pagesInput.placeholder = 'مثال: 2';
+      pagesHint.textContent = 'اكتب عدد الصفحات الفارغة التي تريد إضافتها في نهاية الملف.';
     } else {
       pagesLabel.textContent = mode === 'remove' ? 'الصفحات المراد حذفها' : mode === 'duplicate' ? 'الصفحات المراد تكرارها' : 'الصفحات المراد استخراجها';
       pagesInput.placeholder = 'مثال: 1-3، 5';
@@ -151,6 +163,12 @@
     return order.map(page => page - 1);
   }
 
+  function parsePositiveInt(value, label) {
+    const number = Number(value);
+    if (!Number.isInteger(number) || number < 1) throw new Error(`${label} يجب أن يكون عددًا صحيحًا أكبر من صفر.`);
+    return number;
+  }
+
   async function savePdf(pdf, name) {
     const bytes = await pdf.save();
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
@@ -183,6 +201,19 @@
       const mode = tool.value;
       let output;
       let filename;
+
+      if (mode === 'info') {
+        const file = selectedFiles[0];
+        const bytes = await file.arrayBuffer();
+        const pdf = await PDFDocument.load(bytes);
+        const pagesCount = pdf.getPageCount();
+        const fileSize = (file.size / 1024 / 1024).toFixed(2);
+        status.textContent = `عدد الصفحات: ${pagesCount} | حجم الملف: ${fileSize} ميغابايت.`;
+        status.classList.add('success');
+        runButton.disabled = false;
+        runButton.textContent = 'تنفيذ وتنزيل الملف';
+        return;
+      }
 
       if (mode === 'merge') {
         output = await PDFDocument.create();
@@ -245,12 +276,42 @@
             output.addPage(page);
           });
           filename = 'numbered-pages.pdf';
+        } else if (mode === 'watermark') {
+          const text = pagesInput.value.trim();
+          if (!text) throw new Error('اكتب نص العلامة المائية أولًا.');
+          const copied = await output.copyPages(source, sourceIndices);
+          const font = await output.embedFont(StandardFonts.Helvetica);
+          copied.forEach((page) => {
+            const size = page.getSize();
+            page.drawText(text, {
+              x: size.width / 3,
+              y: size.height / 2,
+              size: 28,
+              font,
+              color: rgb(0.6, 0.6, 0.6),
+              rotate: degrees(45)
+            });
+            output.addPage(page);
+          });
+          filename = 'watermarked.pdf';
+        } else if (mode === 'blankPages') {
+          const blankCount = parsePositiveInt(pagesInput.value, 'عدد الصفحات الفارغة');
+          const template = source.getPages()[0];
+          const { width, height } = template.getSize();
+          const copied = await output.copyPages(source, sourceIndices);
+          copied.forEach(page => output.addPage(page));
+          for (let i = 0; i < blankCount; i++) {
+            output.addPage([width, height]);
+          }
+          filename = 'with-blank-pages.pdf';
         }
       }
 
-      await savePdf(output, filename);
-      status.textContent = 'اكتملت العملية. بدأ تنزيل الملف الناتج.';
-      status.classList.add('success');
+      if (mode !== 'info') {
+        await savePdf(output, filename);
+        status.textContent = 'اكتملت العملية. بدأ تنزيل الملف الناتج.';
+        status.classList.add('success');
+      }
     } catch (error) {
       console.error(error);
       status.textContent = error.message || 'تعذرت معالجة الملف. تأكد أنه PDF صالح وغير محمي بكلمة مرور.';
