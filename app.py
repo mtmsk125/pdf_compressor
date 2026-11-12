@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify
+from flask import Flask, render_template, request, send_file, redirect, url_for, jsonify, Response
 from werkzeug.utils import secure_filename
 import os, time
 from pdf_engine import (
@@ -24,6 +24,11 @@ def image_tools():
 def text_tools():
     """Client-side text tools; text stays in the user's browser."""
     return render_template('text_tools.html')
+
+@app.route('/google211db57d92a6b10e.html')
+def google_site_verification():
+    """Serve the Google Search Console HTML verification token."""
+    return Response('google-site-verification: google211db57d92a6b10e.html', mimetype='text/html')
 
 @app.route('/')
 def index():
