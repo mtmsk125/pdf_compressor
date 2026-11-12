@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="حوّل الصور وغيّر أبعادها ودوّرها أو حوّلها إلى PDF مباشرة في متصفحك.">
+  <title>أدوات الصور | فالكون PDF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#0b1120;--card:#141e30;--line:#28364c;--text:#f4f7fb;--muted:#aab7ca;--accent:#f4a900}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#17243b,var(--bg) 60%);color:var(--text);font-family:'Tajawal',sans-serif}
+    .wrap{width:min(900px,92%);margin:0 auto;padding:32px 0 56px}header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:36px}
+    a{color:var(--accent);text-decoration:none}.brand{font-size:1.2rem;font-weight:800}.back{color:var(--muted)}.hero{text-align:center;margin-bottom:28px}
+    h1{margin:0 0 10px;font-size:clamp(2rem,5vw,3rem)}.lead{max-width:650px;margin:auto;color:var(--muted);font-size:1.1rem;line-height:1.8}
+    .privacy{margin:22px auto 28px;width:fit-content;padding:9px 16px;border:1px solid #28775f;border-radius:999px;background:#123329;color:#a5f1d5}
+    .panel{max-width:680px;margin:auto;padding:clamp(20px,5vw,36px);border:1px solid var(--line);border-radius:22px;background:rgba(20,30,48,.94);box-shadow:0 24px 70px #0005}
+    label{display:block;margin:18px 0 8px;font-weight:700}select,input[type=file],input[type=number]{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:#0d1626;color:var(--text);font:inherit}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.hint,.files{color:var(--muted);font-size:.95rem;line-height:1.7}.files{margin-top:8px;overflow-wrap:anywhere}
+    .action{width:100%;margin-top:22px;padding:14px 18px;border:0;border-radius:12px;background:var(--accent);color:#17120a;font:700 1.1rem 'Tajawal',sans-serif;cursor:pointer}
+    .action:disabled{opacity:.55;cursor:wait}.status{min-height:30px;margin-top:16px;line-height:1.7}.status.error{color:#ff9999}.status.success{color:#8ee7c3}
+    .foot{color:var(--muted);text-align:center;margin-top:25px;font-size:.9rem}[hidden]{display:none!important}
+    @media(max-width:560px){header{align-items:flex-start;flex-direction:column;margin-bottom:28px}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><a class="brand" href="/">🦅 فالكون PDF</a><a class="back" href="/tools">أدوات PDF ←</a></header>
+    <section class="hero"><h1>أدوات الصور</h1><p class="lead">حوّل صورك وعدّلها مباشرة على جهازك. لا تُرفع الصور إلى خادم الموقع.</p><div class="privacy">🔒 تتم معالجة الصور في متصفحك</div></section>
+    <section class="panel" aria-label="معالجة الصور">
+      <label for="tool">اختر الأداة</label>
+      <select id="tool">
+        <option value="convert">تحويل صيغة الصورة</option>
+        <option value="resize">تغيير أبعاد الصورة</option>
+        <option value="rotate">تدوير الصورة</option>
+        <option value="grayscale">تحويل إلى أبيض وأسود</option>
+        <option value="toPdf">تحويل صور متعددة إلى PDF</option>
+      </select>
+      <label for="files">اختر الصورة أو الصور</label>
+      <input id="files" type="file" accept="image/png,image/jpeg,image/webp" multiple>
+      <div id="fileList" class="files" aria-live="polite">لم تختر أي صورة بعد.</div>
+      <div id="formatGroup"><label for="format">صيغة الناتج</label><select id="format"><option value="image/webp">WebP</option><option value="image/jpeg">JPEG</option><option value="image/png">PNG</option></select></div>
+      <div id="resizeGroup" hidden><div class="grid"><div><label for="width">العرض بالبكسل</label><input id="width" type="number" min="1" max="10000" placeholder="مثال: 1200"></div><div><label for="height">الارتفاع بالبكسل</label><input id="height" type="number" min="1" max="10000" placeholder="مثال: 800"></div></div><p class="hint">عند ترك أحد البعدين فارغًا، يُحسب تلقائيًا للمحافظة على تناسب الصورة.</p></div>
+      <div id="rotateGroup" hidden><label for="degrees">زاوية التدوير</label><select id="degrees"><option value="90">90 درجة</option><option value="180">180 درجة</option><option value="270">270 درجة</option></select></div>
+      <button id="run" class="action" type="button">تنفيذ وتنزيل</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <p class="hint">تدعم الصفحة صور PNG وJPEG وWebP. الملفات الضخمة قد تستهلك ذاكرة جهازك. تحويل صور متعددة إلى PDF ينزّل ملفًا واحدًا.</p>
+    </section>
+    <p class="foot">المعالجة محلية في المتصفح؛ لا تختَر صورًا حساسة على جهاز عام.</p>
+  </main>
+<script>
+(() => {
+  const tool=document.getElementById('tool'), filesInput=document.getElementById('files');
+  const fileList=document.getElementById('fileList'), formatGroup=document.getElementById('formatGroup');
+  const resizeGroup=document.getElementById('resizeGroup'), rotateGroup=document.getElementById('rotateGroup');
+  const runButton=document.getElementById('run'), status=document.getElementById('status');
+  const MAX_PIXELS=40000000;
+
+  function updateTool(){
+    const mode=tool.value;
+    filesInput.multiple=mode==='toPdf'; filesInput.value=''; fileList.textContent='لم تختر أي صورة بعد.';
+    formatGroup.hidden=mode==='toPdf'; resizeGroup.hidden=mode!=='resize'; rotateGroup.hidden=mode!=='rotate';
+    status.textContent=''; status.className='status';
+  }
+  tool.addEventListener('change',updateTool);
+  filesInput.addEventListener('change',()=>{
+    const files=Array.from(filesInput.files||[]);
+    fileList.textContent=files.length?files.map(f=>`${f.name} (${(f.size/1024/1024).toFixed(2)} ميغابايت)`).join('، '):'لم تختر أي صورة بعد.';
+  });
+
+  async function loadImage(file){
+    if(!['image/png','image/jpeg','image/webp'].includes(file.type)) throw new Error(`صيغة الصورة غير مدعومة: ${file.name}`);
+    const bitmap=await createImageBitmap(file);
+    if(bitmap.width*bitmap.height>MAX_PIXELS){bitmap.close();throw new Error('الصورة كبيرة جدًا للمعالجة الآمنة في المتصفح. اختر صورة أصغر.');}
+    return bitmap;
+  }
+  function downloadBlob(blob,name){
+    const url=URL.createObjectURL(blob), link=document.createElement('a');
+    link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  }
+  function baseName(name){return name.replace(/\.[^.]+$/,'').replace(/[^\p{L}\p{N}_-]+/gu,'-').slice(0,80)||'image';}
+  async function canvasBlob(canvas,type){
+    return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('تعذر إنشاء ملف الصورة بهذه الصيغة.')) ,type,0.9));
+  }
+  async function convertOne(file,mode){
+    const bitmap=await loadImage(file);let canvas;
+    try{
+      const swapped=mode==='rotate'&&(Number(document.getElementById('degrees').value)%180!==0);
+      canvas=document.createElement('canvas');canvas.width=swapped?bitmap.height:bitmap.width;canvas.height=swapped?bitmap.width:bitmap.height;
+      const ctx=canvas.getContext('2d',{alpha:true});
+      if(mode==='rotate'){
+        const angle=Number(document.getElementById('degrees').value);ctx.translate(canvas.width/2,canvas.height/2);ctx.rotate(angle*Math.PI/180);ctx.drawImage(bitmap,-bitmap.width/2,-bitmap.height/2);
+      }else if(mode==='resize'){
+        const widthValue=Number(document.getElementById('width').value),heightValue=Number(document.getElementById('height').value);
+        if(!widthValue&&!heightValue)throw new Error('أدخل العرض أو الارتفاع على الأقل.');
+        if((widthValue&&(!Number.isInteger(widthValue)||widthValue<1||widthValue>10000))||(heightValue&&(!Number.isInteger(heightValue)||heightValue<1||heightValue>10000)))throw new Error('الأبعاد يجب أن تكون أعدادًا صحيحة بين 1 و10000.');
+        const ratio=bitmap.width/bitmap.height;const width=widthValue||Math.round(heightValue*ratio);const height=heightValue||Math.round(widthValue/ratio);
+        if(width*height>MAX_PIXELS)throw new Error('الأبعاد الناتجة كبيرة جدًا. اختر أبعادًا أصغر.');
+        canvas.width=width;canvas.height=height;canvas.getContext('2d').drawImage(bitmap,0,0,width,height);
+      }else{
+        canvas.width=bitmap.width;canvas.height=bitmap.height;ctx.drawImage(bitmap,0,0);
+        if(mode==='grayscale'){
+          const imageData=ctx.getImageData(0,0,canvas.width,canvas.height);
+          for(let i=0;i<imageData.data.length;i+=4){const gray=Math.round(.299*imageData.data[i]+.587*imageData.data[i+1]+.114*imageData.data[i+2]);imageData.data[i]=imageData.data[i+1]=imageData.data[i+2]=gray;}
+          ctx.putImageData(imageData,0,0);
+        }
+      }
+      const type=mode==='convert'?document.getElementById('format').value:'image/png';
+      const blob=await canvasBlob(canvas,type);const ext=type==='image/jpeg'?'jpg':type==='image/webp'?'webp':'png';
+      downloadBlob(blob,`${baseName(file.name)}-${mode}.${ext}`);
+    }finally{bitmap.close();canvas?.remove();}
+  }
+  async function imagesToPdf(files){
+    const pdf=await PDFLib.PDFDocument.create();
+    for(const file of files){
+      const bitmap=await loadImage(file);let canvas;
+      try{
+        canvas=document.createElement('canvas');canvas.width=bitmap.width;canvas.height=bitmap.height;
+        const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(bitmap,0,0);
+        const jpg=await canvasBlob(canvas,'image/jpeg');const bytes=await jpg.arrayBuffer();const image=await pdf.embedJpg(bytes);
+        const page=pdf.addPage([image.width,image.height]);page.drawImage(image,{x:0,y:0,width:image.width,height:image.height});
+      }finally{bitmap.close();canvas?.remove();}
+    }
+    const bytes=await pdf.save();downloadBlob(new Blob([bytes],{type:'application/pdf'}),'images.pdf');
+  }
+  runButton.addEventListener('click',async()=>{
+    const files=Array.from(filesInput.files||[]);status.className='status';
+    if(!files.length){status.textContent='اختر صورة واحدة على الأقل.';status.classList.add('error');return;}
+    if(tool.value==='toPdf'&&files.length>20){status.textContent='اختر 20 صورة أو أقل في العملية الواحدة.';status.classList.add('error');return;}
+    runButton.disabled=true;runButton.textContent='جارٍ المعالجة في متصفحك…';
+    try{
+      if(tool.value==='toPdf')await imagesToPdf(files);
+      else for(const file of files)await convertOne(file,tool.value);
+      status.textContent='اكتملت العملية وبدأ تنزيل الناتج.';status.classList.add('success');
+    }catch(error){console.error(error);status.textContent=error.message||'تعذرت معالجة الصورة. تحقق من الملف وحاول مرة أخرى.';status.classList.add('error');}
+    finally{runButton.disabled=false;runButton.textContent='تنفيذ وتنزيل';}
+  });
+})();
+</script>
+</body>
+</html>
