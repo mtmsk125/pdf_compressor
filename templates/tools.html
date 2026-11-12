@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
   <style>
-    :root { color-scheme: dark; --bg:#0b1120; --card:#141e30; --line:#28364c; --text:#f4f7fb; --muted:#aab7ca; --accent:#f4a900; --green:#41c995; }
+    :root { color-scheme: dark; --bg:#0b1120; --card:#141e30; --line:#28364c; --text:#f4f7fb; --muted:#aab7ca; --accent:#f4a900; }
     * { box-sizing:border-box; }
     body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#17243b,var(--bg) 60%); color:var(--text); font-family:'Tajawal',sans-serif; }
     .wrap { width:min(900px,92%); margin:0 auto; padding:32px 0 56px; }
@@ -35,6 +35,7 @@
     .status.success { color:#8ee7c3; }
     .foot { color:var(--muted); text-align:center; margin-top:25px; font-size:.9rem; }
     [hidden] { display:none !important; }
+    @media (max-width:560px) { header { align-items:flex-start; flex-direction:column; margin-bottom:28px; } }
   </style>
 </head>
 <body>
@@ -42,7 +43,7 @@
     <header><a class="brand" href="/">🦅 فالكون PDF</a><a class="back" href="/">العودة إلى الصفحة الرئيسية ←</a></header>
     <section class="hero">
       <h1>أدوات PDF تعمل في متصفحك</h1>
-      <p class="lead">ابدأ بثلاث أدوات عملية: دمج الملفات، استخراج صفحات محددة، وتدوير الصفحات. تُعالج الملفات على جهازك ولا تُرفع إلى خادم الموقع.</p>
+      <p class="lead">تُعالج هذه الأدوات ملفاتك على جهازك، دون رفعها إلى خادم الموقع.</p>
       <div class="privacy">🔒 ملفاتك تبقى على جهازك في هذه الصفحة</div>
     </section>
     <section class="panel" aria-label="معالجة ملفات PDF">
@@ -50,15 +51,19 @@
       <select id="tool">
         <option value="merge">دمج ملفات PDF</option>
         <option value="extract">استخراج صفحات محددة</option>
-        <option value="rotate">تدوير صفحات PDF</option>
+        <option value="rotate">تدوير صفحات محددة</option>
+        <option value="reorder">ترتيب الصفحات</option>
+        <option value="remove">حذف صفحات محددة</option>
+        <option value="duplicate">تكرار صفحات محددة</option>
+        <option value="pageNumbers">إضافة أرقام الصفحات</option>
       </select>
       <label for="files">اختر ملفات PDF</label>
       <input id="files" type="file" accept="application/pdf,.pdf" multiple>
       <div id="fileList" class="files" aria-live="polite">لم تختر أي ملف بعد.</div>
       <div id="pagesGroup" hidden>
-        <label for="pages">الصفحات المطلوبة</label>
+        <label id="pagesLabel" for="pages">الصفحات المطلوبة</label>
         <input id="pages" type="text" inputmode="text" placeholder="مثال: 1-3، 5">
-        <p class="hint">اكتب أرقام الصفحات مفصولة بفواصل. يبدأ الترقيم من 1.</p>
+        <p id="pagesHint" class="hint">اكتب أرقام الصفحات أو نطاقاتها، مفصولة بفواصل. يبدأ الترقيم من 1.</p>
       </div>
       <div id="rotateGroup" hidden>
         <label for="degrees">زاوية التدوير</label>
@@ -68,7 +73,7 @@
       <div id="status" class="status" role="status" aria-live="polite"></div>
       <p class="hint">قد لا تعمل بعض ملفات PDF المحمية بكلمة مرور. الملفات الكبيرة قد تستهلك ذاكرة جهازك.</p>
     </section>
-    <p class="foot">الأدوات الثلاث تعمل محليًا في المتصفح. لا تختَر ملفات لا تثق بمصدرها على جهاز عام.</p>
+    <p class="foot">المعالجة تتم محليًا في المتصفح. تجنب استخدام ملفات حساسة على جهاز عام.</p>
   </main>
 <script>
 (() => {
@@ -76,18 +81,37 @@
   const filesInput = document.getElementById('files');
   const fileList = document.getElementById('fileList');
   const pagesGroup = document.getElementById('pagesGroup');
+  const pagesLabel = document.getElementById('pagesLabel');
+  const pagesHint = document.getElementById('pagesHint');
+  const pagesInput = document.getElementById('pages');
   const rotateGroup = document.getElementById('rotateGroup');
   const runButton = document.getElementById('run');
   const status = document.getElementById('status');
-  const { PDFDocument, degrees } = PDFLib;
+  const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
 
   function updateTool() {
     const mode = tool.value;
-    pagesGroup.hidden = mode !== 'extract';
+    const multiple = mode === 'merge';
+    const needsPages = ['extract', 'rotate', 'reorder', 'remove', 'duplicate'].includes(mode);
+    pagesGroup.hidden = !needsPages;
     rotateGroup.hidden = mode !== 'rotate';
-    filesInput.multiple = mode === 'merge';
+    filesInput.multiple = multiple;
     filesInput.value = '';
     fileList.textContent = 'لم تختر أي ملف بعد.';
+    pagesInput.value = '';
+    if (mode === 'reorder') {
+      pagesLabel.textContent = 'ترتيب الصفحات الجديد';
+      pagesInput.placeholder = 'مثال: 3,1,2';
+      pagesHint.textContent = 'اكتب جميع أرقام الصفحات بالترتيب المطلوب، مفصولة بفواصل. يمكنك تكرار الرقم لنسخ الصفحة.';
+    } else if (mode === 'rotate') {
+      pagesLabel.textContent = 'الصفحات المراد تدويرها';
+      pagesInput.placeholder = 'مثال: 1-3، 5';
+      pagesHint.textContent = 'اكتب الصفحات التي تريد تدويرها. اترك باقي الصفحات دون تغيير.';
+    } else {
+      pagesLabel.textContent = mode === 'remove' ? 'الصفحات المراد حذفها' : mode === 'duplicate' ? 'الصفحات المراد تكرارها' : 'الصفحات المراد استخراجها';
+      pagesInput.placeholder = 'مثال: 1-3، 5';
+      pagesHint.textContent = 'اكتب أرقام الصفحات أو نطاقاتها، مفصولة بفواصل. يبدأ الترقيم من 1.';
+    }
     status.textContent = '';
     status.className = 'status';
   }
@@ -99,23 +123,32 @@
 
   function parsePages(value, total) {
     const selected = new Set();
-    const pieces = value.split(',').map(part => part.trim()).filter(Boolean);
-    if (!pieces.length) throw new Error('اكتب أرقام الصفحات المطلوبة.');
-    for (const piece of pieces) {
-      if (/^\d+$/.test(piece)) {
-        const page = Number(piece);
+    const parts = value.split(',').map(part => part.trim());
+    if (!parts.length || parts.some(part => !part)) throw new Error('اكتب أرقام الصفحات المطلوبة بصيغة صحيحة.');
+    for (const part of parts) {
+      if (/^\d+$/.test(part)) {
+        const page = Number(part);
         if (page < 1 || page > total) throw new Error(`رقم الصفحة ${page} خارج نطاق الملف (1–${total}).`);
         selected.add(page - 1);
-      } else {
-        const match = piece.match(/^(\d+)\s*-\s*(\d+)$/);
-        if (!match) throw new Error('صيغة الصفحات غير صحيحة. استخدم مثلًا: 1-3, 5.');
-        const start = Number(match[1]);
-        const end = Number(match[2]);
-        if (start < 1 || end < start || end > total) throw new Error(`نطاق الصفحات ${piece} غير صالح لهذا الملف.`);
-        for (let page = start; page <= end; page++) selected.add(page - 1);
+        continue;
       }
+      const range = part.match(/^(\d+)\s*-\s*(\d+)$/);
+      if (!range) throw new Error('صيغة الصفحات غير صحيحة. استخدم مثلًا: 1-3, 5.');
+      const start = Number(range[1]);
+      const end = Number(range[2]);
+      if (start < 1 || end < start || end > total) throw new Error(`نطاق الصفحات ${part} غير صالح لهذا الملف.`);
+      for (let page = start; page <= end; page++) selected.add(page - 1);
     }
     return Array.from(selected).sort((a, b) => a - b);
+  }
+
+  function parseOrder(value, total) {
+    const parts = value.split(',').map(part => part.trim());
+    if (!parts.length || parts.some(part => !/^\d+$/.test(part))) throw new Error('اكتب ترتيبًا صحيحًا، مثل: 3,1,2.');
+    const order = parts.map(Number);
+    const invalid = order.find(page => page < 1 || page > total);
+    if (invalid) throw new Error(`رقم الصفحة ${invalid} خارج النطاق (1–${total}).`);
+    return order.map(page => page - 1);
   }
 
   async function savePdf(pdf, name) {
@@ -143,36 +176,79 @@
       status.classList.add('error');
       return;
     }
+
     runButton.disabled = true;
     runButton.textContent = 'جارٍ المعالجة في متصفحك…';
     try {
+      const mode = tool.value;
       let output;
-      let name;
-      if (tool.value === 'merge') {
+      let filename;
+
+      if (mode === 'merge') {
         output = await PDFDocument.create();
         for (const file of selectedFiles) {
           const source = await PDFDocument.load(await file.arrayBuffer());
           const copied = await output.copyPages(source, source.getPageIndices());
           copied.forEach(page => output.addPage(page));
         }
-        name = 'merged.pdf';
+        filename = 'merged.pdf';
       } else {
         const source = await PDFDocument.load(await selectedFiles[0].arrayBuffer());
+        const sourceIndices = source.getPageIndices();
+        const total = sourceIndices.length;
         output = await PDFDocument.create();
-        if (tool.value === 'extract') {
-          const indices = parsePages(document.getElementById('pages').value, source.getPageCount());
+
+        if (mode === 'extract') {
+          const indices = parsePages(pagesInput.value, total);
           const copied = await output.copyPages(source, indices);
           copied.forEach(page => output.addPage(page));
-          name = 'extracted-pages.pdf';
-        } else {
-          const amount = Number(document.getElementById('degrees').value);
-          source.getPages().forEach(page => page.setRotation(degrees((page.getRotation().angle + amount) % 360)));
-          const copied = await output.copyPages(source, source.getPageIndices());
+          filename = 'extracted-pages.pdf';
+        } else if (mode === 'reorder') {
+          const order = parseOrder(pagesInput.value, total);
+          const copied = await output.copyPages(source, order);
           copied.forEach(page => output.addPage(page));
-          name = 'rotated.pdf';
+          filename = 'reordered.pdf';
+        } else if (mode === 'remove') {
+          const removed = new Set(parsePages(pagesInput.value, total));
+          const keep = sourceIndices.filter(index => !removed.has(index));
+          if (!keep.length) throw new Error('لا يمكن حذف كل صفحات الملف.');
+          const copied = await output.copyPages(source, keep);
+          copied.forEach(page => output.addPage(page));
+          filename = 'pages-removed.pdf';
+        } else if (mode === 'duplicate') {
+          const duplicates = new Set(parsePages(pagesInput.value, total));
+          const order = [];
+          sourceIndices.forEach(index => {
+            order.push(index);
+            if (duplicates.has(index)) order.push(index);
+          });
+          const copied = await output.copyPages(source, order);
+          copied.forEach(page => output.addPage(page));
+          filename = 'pages-duplicated.pdf';
+        } else if (mode === 'rotate') {
+          const rotateIndices = new Set(parsePages(pagesInput.value, total));
+          const copied = await output.copyPages(source, sourceIndices);
+          const amount = Number(document.getElementById('degrees').value);
+          copied.forEach((page, index) => {
+            if (rotateIndices.has(index)) {
+              page.setRotation(degrees((page.getRotation().angle + amount) % 360));
+            }
+            output.addPage(page);
+          });
+          filename = 'rotated-pages.pdf';
+        } else if (mode === 'pageNumbers') {
+          const copied = await output.copyPages(source, sourceIndices);
+          const font = await output.embedFont(StandardFonts.Helvetica);
+          copied.forEach((page, index) => {
+            const { width } = page.getSize();
+            page.drawText(String(index + 1), { x: width - 55, y: 18, size: 11, font, color: rgb(0.2, 0.2, 0.2) });
+            output.addPage(page);
+          });
+          filename = 'numbered-pages.pdf';
         }
       }
-      await savePdf(output, name);
+
+      await savePdf(output, filename);
       status.textContent = 'اكتملت العملية. بدأ تنزيل الملف الناتج.';
       status.classList.add('success');
     } catch (error) {
