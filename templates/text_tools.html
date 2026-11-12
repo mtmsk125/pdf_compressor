@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="أدوات نصية داخل المتصفح: عد الكلمات، تحويل الأحرف، تنظيف النصوص، ومقارنة النصوص بسرعة وسهولة.">
+  <title>أدوات النصوص | فالكون PDF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{color-scheme:dark;--bg:#0b1120;--card:#141e30;--line:#28364c;--text:#f4f7fb;--muted:#aab7ca;--accent:#f4a900}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#17243b,var(--bg) 60%);color:var(--text);font-family:'Tajawal',sans-serif}
+    .wrap{width:min(980px,92%);margin:0 auto;padding:32px 0 56px}header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:36px}
+    a{color:var(--accent);text-decoration:none}.brand{font-size:1.2rem;font-weight:800}.back{color:var(--muted)}.hero{text-align:center;margin-bottom:28px}
+    h1{margin:0 0 10px;font-size:clamp(2rem,5vw,3rem)}.lead{max-width:700px;margin:auto;color:var(--muted);font-size:1.1rem;line-height:1.8}
+    .privacy{margin:22px auto 28px;width:fit-content;padding:9px 16px;border:1px solid #28775f;border-radius:999px;background:#123329;color:#a5f1d5}
+    .panel{max-width:780px;margin:auto;padding:clamp(20px,5vw,36px);border:1px solid var(--line);border-radius:22px;background:rgba(20,30,48,.94);box-shadow:0 24px 70px #0005}
+    label{display:block;margin:18px 0 8px;font-weight:700}textarea,select,input[type=file],input[type=text]{width:100%;padding:13px;border:1px solid var(--line);border-radius:12px;background:#0d1626;color:var(--text);font:inherit}
+    textarea{min-height:220px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.action{width:100%;margin-top:22px;padding:14px 18px;border:0;border-radius:12px;background:var(--accent);color:#17120a;font:700 1.1rem 'Tajawal',sans-serif;cursor:pointer}.action:disabled{opacity:.55;cursor:wait}.status{min-height:30px;margin-top:16px;line-height:1.7}.status.error{color:#ff9999}.status.success{color:#8ee7c3}.resultBox{margin-top:18px;background:#0d1626;border:1px solid var(--line);border-radius:12px;padding:14px}.resultBox textarea{min-height:180px}
+    .foot{color:var(--muted);text-align:center;margin-top:25px;font-size:.9rem}[hidden]{display:none!important}@media(max-width:560px){header{align-items:flex-start;flex-direction:column}.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><a class="brand" href="/">🦅 فالكون PDF</a><a class="back" href="/tools">أدوات PDF ←</a></header>
+    <section class="hero"><h1>أدوات النصوص</h1><p class="lead">عد الكلمات، نظّف النصوص، قارن النصوص، وحوّلها بسرعة داخل المتصفح بدون تحميل الخادم.</p><div class="privacy">🔒 كل المعالجة تتم في المتصفح</div></section>
+    <section class="panel" aria-label="أدوات النصوص">
+      <label for="tool">اختر الأداة</label>
+      <select id="tool">
+        <option value="countWords">عد الكلمات</option>
+        <option value="countChars">عد الأحرف</option>
+        <option value="trimSpaces">إزالة المسافات المكررة</option>
+        <option value="upper">تحويل إلى أحرف كبيرة</option>
+        <option value="lower">تحويل إلى أحرف صغيرة</option>
+        <option value="compare">مقارنة نصين</option>
+        <option value="removeBlankLines">إزالة الأسطر الفارغة</option>
+        <option value="splitLines">تقسيم النص إلى أسطر</option>
+        <option value="joinLines">دمج الأسطر في نص واحد</option>
+        <option value="normalize">تنظيف وتنسيق نص بسيط</option>
+      </select>
+      <label for="inputText">النص</label>
+      <textarea id="inputText" placeholder="اكتب أو الصق النص هنا...">مرحبا بالعالم
+هذا نص تجريبي.</textarea>
+      <div id="compareFields" hidden class="grid">
+        <div><label for="secondText">النص الثاني</label><textarea id="secondText" placeholder="اكتب النص الثاني هنا...">سطر تجريبي ثانٍ</textarea></div>
+        <div><label for="compareResult">النتيجة</label><textarea id="compareResult" placeholder="ستظهر النتيجة هنا..." readonly></textarea></div>
+      </div>
+      <button id="run" class="action" type="button">تنفيذ</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <div id="resultBox" class="resultBox" hidden><label for="resultText">النتيجة</label><textarea id="resultText" readonly></textarea></div>
+    </section>
+    <p class="foot">جميع المعالجة طارئة داخل المتصفح، مع حماية الخصوصية والتوافق مع قيود Vercel.</p>
+  </main>
+<script>
+(() => {
+  const tool = document.getElementById('tool');
+  const inputText = document.getElementById('inputText');
+  const secondText = document.getElementById('secondText');
+  const compareFields = document.getElementById('compareFields');
+  const compareResult = document.getElementById('compareResult');
+  const resultBox = document.getElementById('resultBox');
+  const resultText = document.getElementById('resultText');
+  const status = document.getElementById('status');
+  const runButton = document.getElementById('run');
+
+  function updateTool(){
+    const mode = tool.value;
+    const showCompare = mode === 'compare';
+    compareFields.hidden = !showCompare;
+    if (showCompare) {
+      resultBox.hidden = false;
+      compareResult.value = '';
+    } else {
+      resultBox.hidden = false;
+    }
+    status.textContent = '';
+    status.className = 'status';
+    resultText.value = '';
+  }
+  tool.addEventListener('change', updateTool);
+
+  function normalizeText(value){
+    return value.replace(/\r\n/g, '\n').replace(/\t/g, ' ');
+  }
+
+  function processText(){
+    const text = normalizeText(inputText.value || '');
+    const mode = tool.value;
+    let out = '';
+
+    switch (mode) {
+      case 'countWords':
+        out = String((text.trim() === '' ? 0 : text.trim().split(/\s+/).length));
+        break;
+      case 'countChars':
+        out = String(text.length);
+        break;
+      case 'trimSpaces':
+        out = text.replace(/\s{2,}/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+        break;
+      case 'upper':
+        out = text.toUpperCase();
+        break;
+      case 'lower':
+        out = text.toLowerCase();
+        break;
+      case 'removeBlankLines':
+        out = text.split(/\n/).filter(line => line.trim() !== '').join('\n');
+        break;
+      case 'splitLines':
+        out = text.split(/\n/).map((line, index) => `${index + 1}. ${line}`).join('\n');
+        break;
+      case 'joinLines':
+        out = text.split(/\n/).join(' ');
+        break;
+      case 'normalize':
+        out = text.replace(/\s+/g, ' ').replace(/\n\s*\n/g, '\n\n').trim();
+        break;
+      case 'compare': {
+        const a = normalizeText(inputText.value || '');
+        const b = normalizeText(secondText.value || '');
+        const same = a === b;
+        const diff = a.length !== b.length ? `الطول مختلف: ${a.length} vs ${b.length}` : 'الطول متطابق';
+        compareResult.value = same ? 'النصوص متطابقة تمامًا.' : `النصوص مختلفة. ${diff}`;
+        resultText.value = same ? a : `${a}\n---\n${b}`;
+        return;
+      }
+      default:
+        out = text;
+    }
+
+    resultText.value = out;
+  }
+
+  runButton.addEventListener('click', () => {
+    status.className = 'status';
+    try {
+      processText();
+      status.textContent = 'تمت المعالجة بنجاح.';
+      status.classList.add('success');
+    } catch (error) {
+      status.textContent = error.message || 'حدث خطأ أثناء المعالجة.';
+      status.classList.add('error');
+    }
+  });
+})();
+</script>
+</body>
+</html>
