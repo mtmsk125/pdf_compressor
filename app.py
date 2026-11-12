@@ -30,6 +30,25 @@ def google_site_verification():
     """Serve the Google Search Console HTML verification token."""
     return Response('google-site-verification: google211db57d92a6b10e.html', mimetype='text/html')
 
+@app.route('/sitemap.xml')
+def sitemap():
+    """Generate an XML sitemap for the public site pages."""
+    public_endpoints = ['index', 'browser_tools', 'image_tools', 'text_tools', 'privacy', 'terms', 'about', 'contact', 'blog']
+    urls = ''.join(
+        f'<url><loc>{url_for(endpoint, _external=True)}</loc></url>'
+        for endpoint in public_endpoints
+    )
+    xml = '<?xml version="1.0" encoding="UTF-8"?>' \
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' \
+          f'{urls}</urlset>'
+    return Response(xml, mimetype='application/xml')
+
+@app.route('/robots.txt')
+def robots_txt():
+    """Allow crawling and advertise the sitemap location."""
+    sitemap_url = url_for('sitemap', _external=True)
+    return Response(f'User-agent: *\nAllow: /\nSitemap: {sitemap_url}\n', mimetype='text/plain')
+
 @app.route('/')
 def index():
     ref = request.args.get('ref', '')
