@@ -15,6 +15,16 @@ def browser_tools():
     """Client-side PDF tools that avoid sending document contents to Flask."""
     return render_template('tools.html')
 
+@app.route('/image_tools')
+def image_tools():
+    """Client-side image tools; image contents stay in the user's browser."""
+    return render_template('image_tools.html')
+
+@app.route('/text_tools')
+def text_tools():
+    """Client-side text tools; text stays in the user's browser."""
+    return render_template('text_tools.html')
+
 @app.route('/')
 def index():
     ref = request.args.get('ref', '')
