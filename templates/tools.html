@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="أدوات PDF تعمل مباشرة في متصفحك دون رفع ملفاتك إلى الموقع.">
+  <title>أدوات PDF في المتصفح | فالكون PDF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <style>
+    :root { color-scheme: dark; --bg:#0b1120; --card:#141e30; --line:#28364c; --text:#f4f7fb; --muted:#aab7ca; --accent:#f4a900; --green:#41c995; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:radial-gradient(ellipse at top,#17243b,var(--bg) 60%); color:var(--text); font-family:'Tajawal',sans-serif; }
+    .wrap { width:min(900px,92%); margin:0 auto; padding:32px 0 56px; }
+    header { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:42px; }
+    a { color:var(--accent); text-decoration:none; }
+    .brand { font-size:1.2rem; font-weight:800; }
+    .back { color:var(--muted); }
+    .hero { text-align:center; margin-bottom:28px; }
+    h1 { margin:0 0 10px; font-size:clamp(2rem,5vw,3rem); }
+    .lead { max-width:650px; margin:auto; color:var(--muted); font-size:1.1rem; line-height:1.8; }
+    .privacy { margin:22px auto 28px; width:fit-content; padding:9px 16px; border:1px solid #28775f; border-radius:999px; background:#123329; color:#a5f1d5; }
+    .panel { max-width:680px; margin:auto; padding:clamp(20px,5vw,36px); border:1px solid var(--line); border-radius:22px; background:rgba(20,30,48,.94); box-shadow:0 24px 70px #0005; }
+    label { display:block; margin:18px 0 8px; font-weight:700; }
+    select,input[type=file],input[type=text] { width:100%; padding:13px; border:1px solid var(--line); border-radius:12px; background:#0d1626; color:var(--text); font:inherit; }
+    input[type=file] { cursor:pointer; }
+    .hint,.files { color:var(--muted); font-size:.95rem; line-height:1.7; }
+    .files { margin-top:8px; overflow-wrap:anywhere; }
+    .action { width:100%; margin-top:22px; padding:14px 18px; border:0; border-radius:12px; background:var(--accent); color:#17120a; font:700 1.1rem 'Tajawal',sans-serif; cursor:pointer; }
+    .action:disabled { opacity:.55; cursor:wait; }
+    .status { min-height:30px; margin-top:16px; line-height:1.7; }
+    .status.error { color:#ff9999; }
+    .status.success { color:#8ee7c3; }
+    .foot { color:var(--muted); text-align:center; margin-top:25px; font-size:.9rem; }
+    [hidden] { display:none !important; }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><a class="brand" href="/">🦅 فالكون PDF</a><a class="back" href="/">العودة إلى الصفحة الرئيسية ←</a></header>
+    <section class="hero">
+      <h1>أدوات PDF تعمل في متصفحك</h1>
+      <p class="lead">ابدأ بثلاث أدوات عملية: دمج الملفات، استخراج صفحات محددة، وتدوير الصفحات. تُعالج الملفات على جهازك ولا تُرفع إلى خادم الموقع.</p>
+      <div class="privacy">🔒 ملفاتك تبقى على جهازك في هذه الصفحة</div>
+    </section>
+    <section class="panel" aria-label="معالجة ملفات PDF">
+      <label for="tool">اختر الأداة</label>
+      <select id="tool">
+        <option value="merge">دمج ملفات PDF</option>
+        <option value="extract">استخراج صفحات محددة</option>
+        <option value="rotate">تدوير صفحات PDF</option>
+      </select>
+      <label for="files">اختر ملفات PDF</label>
+      <input id="files" type="file" accept="application/pdf,.pdf" multiple>
+      <div id="fileList" class="files" aria-live="polite">لم تختر أي ملف بعد.</div>
+      <div id="pagesGroup" hidden>
+        <label for="pages">الصفحات المطلوبة</label>
+        <input id="pages" type="text" inputmode="text" placeholder="مثال: 1-3، 5">
+        <p class="hint">اكتب أرقام الصفحات مفصولة بفواصل. يبدأ الترقيم من 1.</p>
+      </div>
+      <div id="rotateGroup" hidden>
+        <label for="degrees">زاوية التدوير</label>
+        <select id="degrees"><option value="90">90 درجة</option><option value="180">180 درجة</option><option value="270">270 درجة</option></select>
+      </div>
+      <button id="run" class="action" type="button">تنفيذ وتنزيل الملف</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <p class="hint">قد لا تعمل بعض ملفات PDF المحمية بكلمة مرور. الملفات الكبيرة قد تستهلك ذاكرة جهازك.</p>
+    </section>
+    <p class="foot">الأدوات الثلاث تعمل محليًا في المتصفح. لا تختَر ملفات لا تثق بمصدرها على جهاز عام.</p>
+  </main>
+<script>
+(() => {
+  const tool = document.getElementById('tool');
+  const filesInput = document.getElementById('files');
+  const fileList = document.getElementById('fileList');
+  const pagesGroup = document.getElementById('pagesGroup');
+  const rotateGroup = document.getElementById('rotateGroup');
+  const runButton = document.getElementById('run');
+  const status = document.getElementById('status');
+  const { PDFDocument, degrees } = PDFLib;
+
+  function updateTool() {
+    const mode = tool.value;
+    pagesGroup.hidden = mode !== 'extract';
+    rotateGroup.hidden = mode !== 'rotate';
+    filesInput.multiple = mode === 'merge';
+    filesInput.value = '';
+    fileList.textContent = 'لم تختر أي ملف بعد.';
+    status.textContent = '';
+    status.className = 'status';
+  }
+  tool.addEventListener('change', updateTool);
+  filesInput.addEventListener('change', () => {
+    const files = Array.from(filesInput.files || []);
+    fileList.textContent = files.length ? files.map(file => `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} ميغابايت)`).join('، ') : 'لم تختر أي ملف بعد.';
+  });
+
+  function parsePages(value, total) {
+    const selected = new Set();
+    const pieces = value.split(',').map(part => part.trim()).filter(Boolean);
+    if (!pieces.length) throw new Error('اكتب أرقام الصفحات المطلوبة.');
+    for (const piece of pieces) {
+      if (/^\d+$/.test(piece)) {
+        const page = Number(piece);
+        if (page < 1 || page > total) throw new Error(`رقم الصفحة ${page} خارج نطاق الملف (1–${total}).`);
+        selected.add(page - 1);
+      } else {
+        const match = piece.match(/^(\d+)\s*-\s*(\d+)$/);
+        if (!match) throw new Error('صيغة الصفحات غير صحيحة. استخدم مثلًا: 1-3, 5.');
+        const start = Number(match[1]);
+        const end = Number(match[2]);
+        if (start < 1 || end < start || end > total) throw new Error(`نطاق الصفحات ${piece} غير صالح لهذا الملف.`);
+        for (let page = start; page <= end; page++) selected.add(page - 1);
+      }
+    }
+    return Array.from(selected).sort((a, b) => a - b);
+  }
+
+  async function savePdf(pdf, name) {
+    const bytes = await pdf.save();
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+
+  runButton.addEventListener('click', async () => {
+    const selectedFiles = Array.from(filesInput.files || []);
+    status.className = 'status';
+    if (!selectedFiles.length) {
+      status.textContent = 'اختر ملف PDF أولًا.';
+      status.classList.add('error');
+      return;
+    }
+    if (tool.value === 'merge' && selectedFiles.length < 2) {
+      status.textContent = 'اختر ملفي PDF على الأقل لدمجهما.';
+      status.classList.add('error');
+      return;
+    }
+    runButton.disabled = true;
+    runButton.textContent = 'جارٍ المعالجة في متصفحك…';
+    try {
+      let output;
+      let name;
+      if (tool.value === 'merge') {
+        output = await PDFDocument.create();
+        for (const file of selectedFiles) {
+          const source = await PDFDocument.load(await file.arrayBuffer());
+          const copied = await output.copyPages(source, source.getPageIndices());
+          copied.forEach(page => output.addPage(page));
+        }
+        name = 'merged.pdf';
+      } else {
+        const source = await PDFDocument.load(await selectedFiles[0].arrayBuffer());
+        output = await PDFDocument.create();
+        if (tool.value === 'extract') {
+          const indices = parsePages(document.getElementById('pages').value, source.getPageCount());
+          const copied = await output.copyPages(source, indices);
+          copied.forEach(page => output.addPage(page));
+          name = 'extracted-pages.pdf';
+        } else {
+          const amount = Number(document.getElementById('degrees').value);
+          source.getPages().forEach(page => page.setRotation(degrees((page.getRotation().angle + amount) % 360)));
+          const copied = await output.copyPages(source, source.getPageIndices());
+          copied.forEach(page => output.addPage(page));
+          name = 'rotated.pdf';
+        }
+      }
+      await savePdf(output, name);
+      status.textContent = 'اكتملت العملية. بدأ تنزيل الملف الناتج.';
+      status.classList.add('success');
+    } catch (error) {
+      console.error(error);
+      status.textContent = error.message || 'تعذرت معالجة الملف. تأكد أنه PDF صالح وغير محمي بكلمة مرور.';
+      status.classList.add('error');
+    } finally {
+      runButton.disabled = false;
+      runButton.textContent = 'تنفيذ وتنزيل الملف';
+    }
+  });
+})();
+</script>
+</body>
+</html>

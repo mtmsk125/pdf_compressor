@@ -10,6 +10,11 @@ from pdf_engine import (
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100 MB max
 
+@app.route('/tools')
+def browser_tools():
+    """Client-side PDF tools that avoid sending document contents to Flask."""
+    return render_template('tools.html')
+
 @app.route('/')
 def index():
     ref = request.args.get('ref', '')
