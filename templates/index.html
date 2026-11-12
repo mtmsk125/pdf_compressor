@@ -2,29 +2,34 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="منصة فالكون PDF توفر أدوات PDF والصور والنصوص داخل المتصفح، بسرعة وسهولة، وآمنة على Vercel.">
-  <title>فالكون PDF | أدوات PDF والصور والنصوص</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="أدوات PDF، صور، ونصوص داخل المتصفح فقط.">
+  <title>فالكون PDF</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
   <style>
-    :root{color-scheme:dark;--bg:#0b1120;--card:#141e30;--line:#28364c;--text:#f4f7fb;--muted:#aab7ca;--accent:#f4a900;--green:#41c995}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at top,#17243b,var(--bg) 60%);color:var(--text);font-family:'Tajawal',sans-serif}
-    .wrap{width:min(1100px,92%);margin:0 auto;padding:32px 0 56px}header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:36px}
-    a{color:var(--accent);text-decoration:none}.brand{font-size:1.2rem;font-weight:800}.nav{display:flex;gap:18px;flex-wrap:wrap}.nav a{color:var(--muted)}
-    .hero{text-align:center;margin:20px auto 24px;max-width:900px}.hero h1{margin:0 0 12px;font-size:clamp(2.1rem,5vw,4rem)}.lead{color:var(--muted);font-size:1.1rem;line-height:1.8}.badge{display:inline-block;margin-top:18px;padding:8px 16px;border-radius:999px;background:rgba(65,201,149,.12);border:1px solid rgba(65,201,149,.3);color:#9ff0d0;font-weight:700}
-    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px;margin-top:24px}.card{background:rgba(20,30,48,.94);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 18px 40px rgba(0,0,0,.22)}.icon{font-size:2.2rem;margin-bottom:12px}.card h2{margin:10px 0 10px;font-size:1.3rem}.card p{color:var(--muted);line-height:1.8;margin:0 0 16px}.btn{display:inline-block;padding:10px 14px;border-radius:10px;background:var(--accent);color:#17120a;font-weight:800}.small{font-size:.87rem;color:var(--muted)}
-    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin:30px 0 18px}.stat{background:rgba(20,30,48,.7);border:1px solid var(--line);border-radius:14px;padding:18px;text-align:center}.stat strong{display:block;font-size:1.8rem;margin-bottom:6px}.stat span{color:var(--muted)}
-    .faq{margin-top:26px;background:rgba(20,30,48,.7);padding:18px;border:1px solid var(--line);border-radius:14px}.faq h3{margin-top:0}.faq ul{margin:0;padding-right:18px;color:var(--muted);line-height:1.9}
-    footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);text-align:center}
-    @media(max-width:560px){header{align-items:flex-start;flex-direction:column}.nav{gap:8px 16px}}
+    :root{--bg:#0b1120;--card:#101c2e;--card2:#16263f;--line:#293c57;--text:#f4f7fb;--muted:#a9b8ca;--accent:#f4a900;--green:#1ec67a;--shadow:rgba(0,0,0,.2)}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#18273f 0%,#0b1120 55%);color:var(--text);font-family:'Tajawal',sans-serif}
+    a{text-decoration:none;color:inherit}img{max-width:100%}.wrap{width:min(1100px,92%);margin:0 auto;padding:28px 0 54px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px}.brand{font-weight:800;font-size:1.2rem}.nav{display:flex;gap:14px;flex-wrap:wrap}.nav a{padding:8px 12px;border:1px solid var(--line);border-radius:999px;color:var(--muted);background:rgba(255,255,255,.01)}
+    .hero{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center;padding:18px 0 26px}.hero-copy{background:rgba(16,28,46,.9);border:1px solid var(--line);border-radius:22px;padding:26px 24px;box-shadow:0 20px 60px var(--shadow)}
+    .eyebrow{display:inline-block;padding:6px 12px;border:1px solid rgba(30,198,122,.4);background:rgba(30,198,122,.12);color:#adf6d8;border-radius:999px;font-weight:700;font-size:.8rem;margin-bottom:12px}
+    h1{margin:0 0 14px;font-size:clamp(2.3rem,5vw,4rem);line-height:1.1}.lead{margin:0;color:var(--muted);font-size:1.05rem;line-height:1.9}.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:12px 20px;border-radius:12px;font-weight:800;border:1px solid transparent}.btn.primary{background:var(--accent);color:#16120d}.btn.secondary{background:transparent;border-color:var(--line);color:var(--text)}
+    .showcase{background:linear-gradient(135deg,#111f35,#1a2f4d);border:1px solid var(--line);border-radius:22px;padding:20px;height:100%;display:flex;align-items:center;justify-content:center;min-height:280px}
+    .mini-tools{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}.mini{padding:18px 12px;border:1px solid var(--line);border-radius:14px;text-align:center;background:rgba(255,255,255,.02)}.mini .icon{font-size:2rem}.mini strong{display:block;margin-top:8px;font-size:1rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin-top:24px}.card{background:rgba(16,28,46,.9);border:1px solid var(--line);border-radius:18px;padding:22px}.card .icon{font-size:2rem}.card h3{margin:12px 0 10px;font-size:1.2rem}.card p{margin:0 0 14px;color:var(--muted);line-height:1.8}.card a{color:var(--accent);font-weight:700}
+    .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:16px;margin:24px 0 20px}.stat{background:rgba(16,28,46,.8);border:1px solid var(--line);border-radius:16px;padding:18px;text-align:center}.stat strong{font-size:1.7rem;display:block}.stat span{color:var(--muted)}
+    .faq{margin-top:26px;background:rgba(16,28,46,.8);border:1px solid var(--line);border-radius:18px;padding:18px}.faq h3{margin-top:0}.faq ul{margin:0;padding-right:18px;color:var(--muted);line-height:1.9}
+    footer{margin-top:36px;padding-top:18px;border-top:1px solid var(--line);color:var(--muted);text-align:center}
+    @media(max-width:860px){.hero{grid-template-columns:1fr}.mini-tools{grid-template-columns:1fr 1fr}.}
+    @media(max-width:560px){header{flex-direction:column;align-items:flex-start}.nav{gap:10px}.mini-tools{grid-template-columns:1fr}}
   </style>
 </head>
 <body>
   <main class="wrap">
     <header>
-      <a class="brand" href="/">🦅 فالكون PDF</a>
+      <div class="brand">🦅 فالكون PDF</div>
       <nav class="nav">
         <a href="/tools">أدوات PDF</a>
         <a href="/image_tools">أدوات الصور</a>
@@ -33,54 +38,69 @@
     </header>
 
     <section class="hero">
-      <h1>أدوات PDF والصور والنصوص داخل المتصفح</h1>
-      <p class="lead">تعمل جميع الأدوات داخل المتصفح مباشرة، لتقليل الضغط على الخادم، وتحسين السرعة، مع الحفاظ على الخصوصية والملاءمة مع قيود Vercel.</p>
-      <div class="badge">⚡ معالجة محلية وآمنة</div>
+      <div class="hero-copy">
+        <div class="eyebrow">أدوات محلية داخل المتصفح</div>
+        <h1>أدوات PDF، صور، ونصوص بسرعة وسهولة.</h1>
+        <p class="lead">منصة فالكون PDF تركز على حلول تعمل مباشرة داخل المتصفح، بدون رفع ملفاتك إلى الخادم، مع سرعة عالية وسهولة استخدام، وبنية مناسبة لبيئة Vercel.</p>
+        <div class="cta-row">
+          <a href="/tools" class="btn primary">ابدأ الآن</a>
+          <a href="/image_tools" class="btn secondary">أدوات الصور</a>
+        </div>
+      </div>
+
+      <div class="showcase">
+        <div class="mini-tools">
+          <div class="mini"><div class="icon">📄</div><strong>PDF</strong></div>
+          <div class="mini"><div class="icon">🖼️</div><strong>صور</strong></div>
+          <div class="mini"><div class="icon">✍️</div><strong>نصوص</strong></div>
+          <div class="mini"><div class="icon">🔁</div><strong>دمج</strong></div>
+          <div class="mini"><div class="icon">✂️</div><strong>تقسيم</strong></div>
+          <div class="mini"><div class="icon">📊</div><strong>عد</strong></div>
+        </div>
+      </div>
     </section>
 
     <section class="stats">
       <div class="stat"><strong>10+</strong><span>أدوات PDF</span></div>
       <div class="stat"><strong>5</strong><span>أدوات صور</span></div>
       <div class="stat"><strong>10</strong><span>أدوات نصوص</span></div>
-      <div class="stat"><strong>100%</strong><span>محلية داخل المتصفح</span></div>
+      <div class="stat"><strong>100%</strong><span>محلية</span></div>
     </section>
 
-    <section class="cards">
+    <section class="grid">
       <article class="card">
         <div class="icon">📄</div>
-        <h2>أدوات PDF</h2>
-        <p>دمج، تقسيم، حذف الصفحات، ترتيبها، إضافة أرقام الصفحات، علامة مائية، معلومات الملف، وعمليات أساسية أخرى.</p>
-        <a class="btn" href="/tools">فتح أدوات PDF</a>
+        <h3>أدوات PDF</h3>
+        <p>دمج ملفات PDF، استخراج صفحات محددة، ترتيبها، حذفها، تدويرها، تعديل الرقم الصفحة، وإضافة علامات مائية.</p>
+        <a href="/tools">فتح الأدوات →</a>
       </article>
 
       <article class="card">
         <div class="icon">🖼️</div>
-        <h2>أدوات الصور</h2>
-        <p>تحويل الصيغ، تغيير الأبعاد، التدوير، الأبيض والأسود، وتحويل صور متعددة إلى ملف PDF واحد.</p>
-        <a class="btn" href="/image_tools">فتح أدوات الصور</a>
+        <h3>أدوات الصور</h3>
+        <p>تحويل الصور، تغيير الأبعاد، التدوير، تدرج الرمادي، وتحويل مجموعات صور إلى ملف PDF واحد بسهولة.</p>
+        <a href="/image_tools">فتح الأدوات →</a>
       </article>
 
       <article class="card">
         <div class="icon">✍️</div>
-        <h2>أدوات النصوص</h2>
-        <p>عد الكلمات، تنظيف النصوص، تحويل الأحرف، إزالة الأسطر الفارغة، ومقارنة نصين بسرعة وسهولة.</p>
-        <a class="btn" href="/text_tools">فتح أدوات النصوص</a>
+        <h3>أدوات النصوص</h3>
+        <p>عد الكلمات والأحرف، تنظيف النص، تحويل الأحرف، إزالة الأسطر الفارغة، ومقارنة نصين بسرعة.</p>
+        <a href="/text_tools">فتح الأدوات →</a>
       </article>
     </section>
 
     <section class="faq">
-      <h3>لماذا نعمل بهذه الطريقة؟</h3>
+      <h3>لماذا هذا الأسلوب؟</h3>
       <ul>
-        <li>لأنها تضمن السرعة والفتحة في بيئة Vercel.</li>
-        <li>لأن الملفات لا تتطلب رفعها إلى خادم كبير.</li>
-        <li>لأن المستخدم يحصل على معالجة سريعة ومباشرة في المتصفح نفسه.</li>
-        <li>لأن كل أداة يمكن توسيعها لاحقًا دون التأثير على البنية الأساسية.</li>
+        <li>لأنه يحافظ على سرعة الموقع داخل متصفح المستخدم.</li>
+        <li>لأنه يخفف الضغط على الخادم ويحافظ على الاستقرار في Vercel.</li>
+        <li>لأنه يعطي تجربة مستخدم أكثر راحة وخصوصية.</li>
+        <li>لأنه يضمن إمكانية توسيع الأدوات لاحقًا دون تعقيد البنية.</li>
       </ul>
     </section>
 
-    <footer>
-      © 2026 فالكون PDF — أدوات PDF والصور والنصوص داخل المتصفح
-    </footer>
+    <footer>© 2026 فالكون PDF — جميع الأدوات تعمل داخل المتصفح.</footer>
   </main>
 </body>
 </html>
