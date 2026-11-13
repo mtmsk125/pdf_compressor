@@ -57,7 +57,9 @@
         <option value="duplicate">تكرار صفحات محددة</option>
         <option value="pageNumbers">إضافة أرقام الصفحات</option>
         <option value="watermark">إضافة علامة مائية</option>
+        <option value="addText">إضافة نص إلى كل صفحة</option>
         <option value="blankPages">إضافة صفحات فارغة</option>
+        <option value="metadata">تعديل بيانات المستند</option>
         <option value="info">معلومات الملف</option>
       </select>
       <label for="files">اختر ملفات PDF</label>
@@ -71,6 +73,14 @@
       <div id="rotateGroup" hidden>
         <label for="degrees">زاوية التدوير</label>
         <select id="degrees"><option value="90">90 درجة</option><option value="180">180 درجة</option><option value="270">270 درجة</option></select>
+      </div>
+      <div id="metadataGroup" hidden>
+        <label for="docTitle">عنوان المستند</label>
+        <input id="docTitle" type="text" placeholder="مثال: تقرير الربع الرابع">
+        <label for="docAuthor">المؤلف</label>
+        <input id="docAuthor" type="text" placeholder="مثال: فريق فالكون PDF">
+        <label for="docSubject">الموضوع</label>
+        <input id="docSubject" type="text" placeholder="مثال: ملف PDF تم تعديله">
       </div>
       <button id="run" class="action" type="button">تنفيذ وتنزيل الملف</button>
       <div id="status" class="status" role="status" aria-live="polite"></div>
@@ -88,6 +98,10 @@
   const pagesHint = document.getElementById('pagesHint');
   const pagesInput = document.getElementById('pages');
   const rotateGroup = document.getElementById('rotateGroup');
+  const metadataGroup = document.getElementById('metadataGroup');
+  const docTitle = document.getElementById('docTitle');
+  const docAuthor = document.getElementById('docAuthor');
+  const docSubject = document.getElementById('docSubject');
   const runButton = document.getElementById('run');
   const status = document.getElementById('status');
   const { PDFDocument, StandardFonts, rgb, degrees } = PDFLib;
@@ -95,13 +109,18 @@
   function updateTool() {
     const mode = tool.value;
     const multiple = mode === 'merge';
-    const needsPages = ['extract', 'rotate', 'reorder', 'remove', 'duplicate', 'watermark', 'blankPages'].includes(mode);
+    const needsPages = ['extract', 'rotate', 'reorder', 'remove', 'duplicate', 'watermark', 'addText', 'blankPages'].includes(mode);
+    const needsMetadata = mode === 'metadata';
     pagesGroup.hidden = !needsPages;
     rotateGroup.hidden = mode !== 'rotate';
+    metadataGroup.hidden = !needsMetadata;
     filesInput.multiple = multiple;
     filesInput.value = '';
     fileList.textContent = 'لم تختر أي ملف بعد.';
     pagesInput.value = '';
+    docTitle.value = '';
+    docAuthor.value = '';
+    docSubject.value = '';
 
     if (mode === 'reorder') {
       pagesLabel.textContent = 'ترتيب الصفحات الجديد';
@@ -115,6 +134,10 @@
       pagesLabel.textContent = 'نص العلامة المائية';
       pagesInput.placeholder = 'مثال: فالكون PDF';
       pagesHint.textContent = 'اكتب نص العلامة المائية المراد إضافتها على كل صفحة.';
+    } else if (mode === 'addText') {
+      pagesLabel.textContent = 'نص الصفحة';
+      pagesInput.placeholder = 'مثال: تمت المعالجة بواسطة فالكون PDF';
+      pagesHint.textContent = 'اكتب نصًا سيظهر في منتصف كل صفحة من الملف.';
     } else if (mode === 'blankPages') {
       pagesLabel.textContent = 'عدد الصفحات الفارغة';
       pagesInput.placeholder = 'مثال: 2';
@@ -215,6 +238,23 @@
         return;
       }
 
+      if (mode === 'metadata') {
+        const file = selectedFiles[0];
+        const pdf = await PDFDocument.load(await file.arrayBuffer());
+        const title = docTitle.value.trim() || 'Falcon PDF';
+        const author = docAuthor.value.trim() || 'Falcon PDF';
+        const subject = docSubject.value.trim() || 'PDF document';
+        pdf.setTitle(title);
+        pdf.setAuthor(author);
+        pdf.setSubject(subject);
+        pdf.setProducer('Falcon PDF');
+        filename = 'metadata-updated.pdf';
+        await savePdf(pdf, filename);
+        status.textContent = 'تم تحديث بيانات المستند بنجاح.';
+        status.classList.add('success');
+        return;
+      }
+
       if (mode === 'merge') {
         output = await PDFDocument.create();
         for (const file of selectedFiles) {
@@ -294,6 +334,23 @@
             output.addPage(page);
           });
           filename = 'watermarked.pdf';
+        } else if (mode === 'addText') {
+          const text = pagesInput.value.trim();
+          if (!text) throw new Error('اكتب نصًا ليظهر على كل صفحة.');
+          const copied = await output.copyPages(source, sourceIndices);
+          const font = await output.embedFont(StandardFonts.Helvetica);
+          copied.forEach((page) => {
+            const size = page.getSize();
+            page.drawText(text, {
+              x: size.width / 2 - 90,
+              y: size.height / 2,
+              size: 18,
+              font,
+              color: rgb(0.15, 0.15, 0.15)
+            });
+            output.addPage(page);
+          });
+          filename = 'text-added.pdf';
         } else if (mode === 'blankPages') {
           const blankCount = parsePositiveInt(pagesInput.value, 'عدد الصفحات الفارغة');
           const template = source.getPages()[0];
