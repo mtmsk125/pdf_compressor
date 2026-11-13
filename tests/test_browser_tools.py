@@ -27,12 +27,11 @@ class BrowserToolsSmokeTests(unittest.TestCase):
             with self.subTest(tool=tool_value):
                 self.assertIn(f'value="{tool_value}"', html)
 
-        # Guard that document operations continue to use the browser-side PDF library.
         self.assertIn("PDFDocument.create()", html)
         self.assertIn("PDFDocument.load", html)
         self.assertIn("savePdf(output, filename)", html)
 
-    def test_pdf_tools_page_exposes_the_extended_week_two_operations(self):
+    def test_pdf_tools_page_exposes_the_extended_week_two_and_three_operations(self):
         response = self.client.get("/tools")
         html = response.get_data(as_text=True)
 
@@ -43,7 +42,9 @@ class BrowserToolsSmokeTests(unittest.TestCase):
             "duplicate",
             "pageNumbers",
             "watermark",
+            "addText",
             "blankPages",
+            "metadata",
             "info",
         ):
             with self.subTest(tool=tool_value):
@@ -52,6 +53,8 @@ class BrowserToolsSmokeTests(unittest.TestCase):
         self.assertIn("ترتيب الصفحات الجديد", html)
         self.assertIn("العلامة المائية", html)
         self.assertIn("عدد الصفحات الفارغة", html)
+        self.assertIn("إضافة نص إلى كل صفحة", html)
+        self.assertIn("تعديل بيانات المستند", html)
 
     def test_image_and_text_tool_pages_are_available(self):
         for path in ("/image_tools", "/text_tools"):
